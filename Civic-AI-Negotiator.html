@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Civic Policy AI Interaction Study</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- This allows the Groq SDK to run in a browser environment -->
+    <script type="module">
+        window.process = { env: { GROQ_API_KEY: "nope" } };
+    </script>
+    
+    <style>
+        :root {
+            /* Updated, warmer color scheme */
+            --bg-color: #f7f7f7;
+            --text-color: #222;
+            --primary-color: #0062bc;
+            --secondary-color: #e6f0ff;
+            --border-color: #ddd;
+            --container-bg: #ffffff;
+            --shadow: 0 6px 16px rgba(0,0,0,0.08);
+            --green-btn: #28a745;
+            --green-btn-hover: #218838;
+            /* NEW: Distinct colors for agents */
+            --agent-a-bg: #e6f0ff;
+            --agent-a-border: #00529e;
+            --agent-b-bg: #e6fff0;
+            --agent-b-border: #218838;
+        }
+
+        /* Responsive base font size */
+        html { font-size: 100%; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+
+        #app-container {
+            width: 100%;
+            /* UPDATED: Increased max-width and min-height */
+            max-width: 1200px;
+            min-height: 95vh; 
+            background: var(--container-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-bottom: 2px solid rgba(0,0,0,0.1);
+            text-align: center;
+            /* UPDATED: Added flex for logo */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+        
+        /* ASSET: Header Logo */
+        .logo-placeholder {
+            width: 40px; 
+            height: 40px;
+            /* ASSET: Path: 'assets/logo.svg' */
+            background: url('assets/logo.svg') no-repeat center center;
+            background-size: contain;
+            /* Fallback color if logo fails */
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 8px;
+        }
+        
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-family: 'Roboto Mono', monospace;
+            font-weight: 700;
+        }
+
+        .screen { display: none; }
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            padding: 2.5rem; /* Increased padding */
+            gap: 1.5rem;
+            flex-grow: 1;
+        }
+
+        h2 {
+            font-family: 'Roboto Mono', monospace;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 0.5rem;
+            margin-top: 0;
+            font-size: 1.75rem;
+        }
+        
+        p, li { line-height: 1.6; font-size: 1.05rem; }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.85rem 1.75rem; /* Slightly larger */
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            /* NEW: For spinner alignment */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+        button:hover {
+            background-color: #00529e;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            background-color: #aaa;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+        
+        /* UPDATED: Welcome Screen Button Group */
+        .welcome-button-group {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        .welcome-button-group button {
+            background-color: #fff;
+            color: var(--primary-color);
+            text-align: left;
+            border: 2px solid var(--primary-color);
+            flex: 1;
+            max-width: 350px;
+            display: flex;
+            align-items: center;
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+        }
+        .welcome-button-group button:hover {
+            background-color: var(--secondary-color);
+            box-shadow: 0 4px 12px rgba(0, 98, 188, 0.2);
+            transform: translateY(-4px);
+            border-color: #00529e;
+        }
+        .welcome-button-group button div {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        .welcome-button-group button span {
+            font-weight: 500;
+            font-size: 1rem;
+            color: #333;
+        }
+        
+        /* ASSET: Button Icons */
+        .button-icon {
+            width: 48px;
+            height: 48px;
+            margin-right: 1.5rem;
+            background-color: var(--secondary-color);
+            border-radius: 8px;
+            padding: 8px;
+            object-fit: contain;
+        }
+
+        /* UPDATED: Problem Selection Buttons */
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .button-group button {
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+            text-align: left;
+            border: 1px solid #bde0ff;
+        }
+        .button-group button:hover {
+            background-color: #cce4ff;
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* UPDATED: Layout Fix */
+        #interaction-screen {
+            flex-direction: row;
+            gap: 2rem;
+            flex-grow: 1; /* This makes the screen fill its parent */
+            overflow: hidden; /* Prevent child overflow */
+        }
+
+        #main-interaction, #clarification-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            background: #fdfdfd;
+            /* UPDATED: Ensures flex children behave */
+            height: 100%; 
+            box-sizing: border-box;
+        }
+        
+        #clarification-panel { flex: 0.8; }
+        #single-chatbot-view { width: 100%; }
+
+        /* UPDATED: This container now fills height */
+        #single-chatbot-view, #dual-negotiation-view {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        /* UPDATED: The critical fix for chat window height */
+        .chat-window {
+            flex-grow: 1; /* This makes it fill available space */
+            min-height: 300px; /* A sensible minimum */
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: white;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem; /* Increased gap */
+        }
+
+        .chat-message {
+            padding: 0.75rem 1rem; /* Increased padding */
+            border-radius: 8px;
+            max-width: 85%;
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+        .chat-message.user {
+            background: var(--secondary-color);
+            color: #002b4d;
+            align-self: flex-end;
+            border-radius: 8px 8px 0 8px;
+        }
+        .chat-message.assistant {
+            background: #f1f1f1;
+            color: var(--text-color);
+            align-self: flex-start;
+            border-radius: 8px 8px 8px 0;
+            /* UPDATED: Space for avatar */
+            position: relative;
+            padding-left: 60px; /* 10px padding + 40px avatar + 10px gap */
+            min-height: 40px; /* Ensure space for avatar */
+        }
+        
+        /* UPDATED: Avatar styling */
+        .chat-message.assistant::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #ccc; /* Fallback */
+            /* FIX: Use contain for SVGs */
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        /* ASSET: Neutral Avatar */
+        .chat-message.assistant.avatar-neutral::before {
+            /* FIX: Path: 'assets/avatar-neutral.svg' */
+            background-image: url('assets/avatar-neutral.svg');
+        }
+        /* ASSET: Agent Alpha Avatar */
+        .chat-message.agent-a::before {
+            /* FIX: Path: 'assets/avatar-alpha.svg' */
+            background-image: url('assets/avatar-alpha.svg');
+        }
+        /* ASSET: Agent Beta Avatar */
+        .chat-message.agent-b::before {
+            /* FIX: Path: 'assets/avatar-beta.svg' */
+            background-image: url('assets/avatar-beta.svg');
+        }
+        
+        /* NEW: "Thinking" message styling */
+        .chat-message.thinking {
+            font-style: italic;
+            color: #555;
+        }
+        /* "Thinking" dots animation */
+        .chat-message.thinking::after {
+            content: '.';
+            animation: dots 1s steps(5, end) infinite;
+        }
+        @keyframes dots {
+            0%, 20% { content: "."; }
+            40% { content: ".."; }
+            60%, 80%, 100% { content: "..."; }
+        }
+
+        .chat-message strong {
+            display: block;
+            margin-bottom: 0.25rem;
+            font-family: 'Roboto Mono', monospace;
+            color: var(--primary-color);
+            font-size: 0.9rem;
+        }
+        .chat-message.assistant strong { color: #555; }
+        
+        /* UPDATED: System message styling */
+        .chat-message.system {
+            background: #fffbe6;
+            color: #584c0c;
+            border: 1px solid #ffeeba;
+            align-self: center;
+            font-style: italic;
+            font-size: 0.9rem;
+            width: 100%;
+            max-width: 100%;
+            text-align: center;
+            box-sizing: border-box;
+            border-radius: 8px;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem; /* Added margin */
+        }
+        .chat-input input {
+            flex-grow: 1;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+        }
+        .chat-input input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px var(--secondary-color);
+        }
+
+        #stance-submission-screen textarea {
+            width: 100%;
+            height: 250px; /* Increased height */
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            resize: vertical;
+            box-sizing: border-box; /* Important for padding */
+        }
+        
+        /* UPDATED: Agent-specific colors */
+        #dual-negotiation-view .chat-message.agent-a {
+            background: var(--agent-a-bg);
+            border-left: 4px solid var(--agent-a-border);
+        }
+        #dual-negotiation-view .chat-message.agent-b {
+            background: var(--agent-b-bg);
+            border-left: 4px solid var(--agent-b-border);
+        }
+        #dual-negotiation-view .chat-message.agent-a strong {
+            color: var(--agent-a-border);
+        }
+        #dual-negotiation-view .chat-message.agent-b strong {
+            color: var(--agent-b-border);
+        }
+        
+        /* NEW: Proceed Button Styling */
+        .proceed-btn {
+            background-color: var(--green-btn);
+            width: 100%;
+            margin-top: 1rem;
+            padding: 1rem;
+            font-size: 1.1rem;
+        }
+        .proceed-btn:hover {
+            background-color: var(--green-btn-hover);
+        }
+        .proceed-btn:disabled {
+            background-color: #aaa;
+            box-shadow: none;
+            transform: none;
+        }
+        
+        /* NEW: Final Screen Styling */
+        #complete-screen {
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+        }
+        .complete-icon {
+            width: 60px;
+            height: 60px;
+            /* ASSET: Path: 'assets/icon-complete.svg' */
+            background: url('assets/icon-complete.svg') no-repeat center center;
+            background-size: contain;
+            background-color: #e6fff0;
+            border-radius: 50%;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        /* NEW: Loading spinner */
+        .spinner {
+            width: 1.25em;
+            height: 1.25em;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <header>
+            <!-- ASSET: Header Logo -->
+            <div class="logo-placeholder"></div>
+            <h1>Civic Policy AI Interaction Study</h1>
+        </header>
+
+        <!-- Screen 1: Welcome & Group Assignment -->
+        <div class="screen active" id="welcome-screen">
+            <h2>Welcome, Participant</h2>
+            <p>Thank you for participating in this research study on AI-assisted decision-making. Your task will be to review a complex policy topic, use an AI tool to understand it, and then provide your stance on the matter.</p>
+            <p>Please select your assigned group to begin.</p>
+            <!-- UPDATED: Button layout and icons -->
+            <div class="welcome-button-group">
+                <button onclick="app.startSession('singleChatbot')">
+                    <!-- ASSET: Path: 'assets/icon-single-chat.svg' -->
+                    <img src="assets/icon-single-chat.svg" alt="" class="button-icon" 
+                         onerror="this.style.display='none'">
+                    <div>Start as Group 1<br><span>(Single Chatbot)</span></div>
+                </button>
+                <button onclick="app.startSession('dualNegotiation')">
+                    <!-- ASSET: Path: 'assets/icon-dual-chat.svg' -->
+                    <img src="assets/icon-dual-chat.svg" alt="" class="button-icon"
+                         onerror="this.style.display='none'">
+                    <div>Start as Group 2<br><span>(Dual-AI Negotiation)</span></div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Screen 2: Problem Selection -->
+        <div class="screen" id="problem-selection-screen">
+            <h2>Step 1: Select a Policy Problem</h2>
+            <p>Please select the topic you feel you know the **least** about from the options below.</p>
+            <div class="button-group" id="problem-list">
+                <!-- Problems will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <!-- Screen 3: Interaction -->
+        <div class="screen" id="interaction-screen">
+            <!-- This panel is for Group 1 (Main) and Group 2 (Main) -->
+            <div id="main-interaction">
+                <!-- Group 1: Single Chatbot View -->
+                <div id="single-chatbot-view" style="display: none;">
+                    <h2>Step 2: Discuss the Topic</h2>
+                    <p>Use the chat window below to ask questions and clarify your understanding of the policy. The AI will act as a neutral informational assistant.</p>
+                    <div class="chat-window" id="single-chat-window"></div>
+                    <form class="chat-input" id="single-chat-form">
+                        <input type="text" id="single-chat-input" placeholder="Ask a question..." autocomplete="off">
+                        <button type="submit">Send</button>
+                    </form>
+                    <!-- NEW: Continuity Fix for Group 1 -->
+                    <button class="proceed-btn" onclick="app.goToStanceScreen()">
+                        I'm done, proceed to submit stance
+                    </button>
+                </div>
+
+                <!-- Group 2: Dual-AI Negotiation View -->
+                <div id="dual-negotiation-view" style="display: none;">
+                    <h2>Step 2: Observe the Negotiation</h2>
+                    <p>You will observe two AI agents debating the policy. They will hold opposing views and try to find common ground. The negotiation is limited to 5 exchanges.</p>
+                    <button id="start-negotiation-btn" onclick="app.runNegotiation()">Start Negotiation</button>
+                    <div class="chat-window" id="negotiation-window"></div>
+                    <!-- NEW: Continuity Fix for Group 2 -->
+                    <button id="negotiation-proceed-btn" class="proceed-btn" onclick="app.goToStanceScreen()" disabled>
+                        Read negotiation & use chat, then proceed
+                    </button>
+                </div>
+            </div>
+
+            <!-- This panel is ONLY for Group 2 -->
+            <div id="clarification-panel" style="display: none;">
+                <h3>Clarification Chat</h3>
+                <p>You can use this *separate* chat to ask the neutral AI for definitions or factual clarifications at any time.</p>
+                <div class="chat-window" id="clarification-chat-window"></div>
+                <form class="chat-input" id="clarification-chat-form">
+                    <input type="text" id="clarification-chat-input" placeholder="Ask for clarification..." autocomplete="off">
+                    <button type="submit">Send</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Screen 4: Stance Submission -->
+        <div class="screen" id="stance-submission-screen">
+            <h2>Step 3: Submit Your Stance</h2>
+            <p>Based on the problem description and your interaction with the AI, please write a brief stance on the policy. Describe your position and your key reasons.</p>
+            <p><strong>Topic:</strong> <span id="stance-topic-title"></span></p>
+            <textarea id="stance-textarea" placeholder="Enter your stance here..."></textarea>
+            <button id="submit-stance-btn" onclick="app.submitStance()" class="proceed-btn">
+                Submit Final Stance
+            </button>
+        </div>
+
+        <!-- Screen 5: Complete -->
+        <div class="screen" id="complete-screen">
+            <!-- NEW: Added icon -->
+            <div class="complete-icon"></div>
+            <h2>Thank You!</h2>
+            <p>Your participation is complete. Your responses have been recorded for analysis.</p>
+            <p>The researcher will now conduct a brief qualitative interview.</p>
+        </div>
+
+    </div>
+
+    <!-- Main Application Logic -->
+    <script type="module">
+        import Groq from "https://esm.sh/groq-sdk";
+
+        // --- 1. CONFIGURATION ---
+
+        // ⚠️ IMPORTANT: Replace with your Groq API key
+        const API_KEY = "nope"; 
+        const LLM_MODEL = 'llama-3.1-8b-instant';
+        const NEGOTIATION_EXCHANGES = 5; // As per your brief
+        const MAX_RETRIES = 5; // Max retries for rate limit
+
+        let groq;
+        
+        // NEW: Sleep helper function
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        // NEW: Helper function to trigger a JSON file download (we'll keep it as a fallback)
+        function downloadJSON(data, filename) {
+            // 1. Convert the JavaScript object into a JSON string
+            const jsonString = JSON.stringify(data, null, 2);
+            
+            // 2. Create a Blob (Binary Large Object) from the string
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            
+            // 3. Create a temporary URL for the Blob
+            const url = URL.createObjectURL(blob);
+            
+            // 4. Create a temporary, invisible link element
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename; // This attribute tells the browser to download the file
+            
+            // 5. Programmatically click the link to start the download
+            document.body.appendChild(a); // The link must be in the DOM to be clicked
+            a.click();
+            
+            // 6. Clean up by removing the link and revoking the temporary URL
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // --- 2. PERSONAS AND PROBLEMS ---
+
+        const PROBLEMS = {
+            'chat-control': {
+                title: "EU 'Chat Control' Policy",
+                fullText: "The proposed EU 'Chat Control' (CSA Regulation) policy aims to combat child sexual abuse material (CSAM) by requiring providers of interpersonal communication services (like WhatsApp, Signal, or Messenger) to scan all messages, including text, images, and videos, for CSAM. This involves 'client-side scanning' before messages are encrypted. Proponents argue it's a necessary tool to protect children. Opponents, including privacy advocates and security experts, warn that it effectively breaks end-to-end encryption, creates a massive surveillance infrastructure, and is prone to errors, threatening the privacy and security of all EU citizens."
+            },
+            'ai-policy': {
+                title: "EU AI Act Regulations",
+                fullText: "The EU AI Act is a proposed regulation that categorizes AI systems based on risk. 'High-risk' systems (e.g., in critical infrastructure, medical devices, or law enforcement) will face strict requirements for transparency, data quality, and human oversight. 'Limited-risk' systems (e.g., chatbots) will have transparency obligations, and 'minimal-risk' systems (e.g., spam filters) will be largely unregulated. Proponents argue this 'risk-based' approach protects fundamental rights and fosters trust in AI. Opponents worry it could be too restrictive, stifle innovation, and be difficult to enforce, putting EU tech companies at a competitive disadvantage."
+            },
+            'co2-emissions': {
+                title: "Man-made CO2 Emissions Impact",
+                fullText: "The scientific consensus is that man-made CO2 emissions are the primary driver of current climate change and global warming. This is based on overwhelming evidence from atmospheric measurements, ice core data, and climate models. Proposed solutions often involve transitioning to renewable energy, carbon capture technologies, and international agreements to reduce emissions. However, debates persist regarding the economic feasibility, speed of implementation, and the exact balance between technological solutions and lifestyle changes required to mitigate the worst impacts."
+            }
+        };
+
+        const PERSONAS = {
+            clarification: {
+                name: "Neutral Assistant",
+                systemPrompt: "You are a neutral, impartial AI assistant. Your sole purpose is to provide factual, unbiased definitions and explanations about policy topics. Do not take a stance or offer opinions. Keep responses concise and purely informational. The user is a research participant. Greet them once and then answer their questions directly."
+            },
+            agentA: {
+                name: "Agent Alpha",
+                systemPrompt: `You are AI Agent Alpha. You are participating in a 5-exchange negotiation with Agent Beta. You must take a strong, 'pro-policy' or 'interventionist' stance on the given topic. Your goal is to argue for the policy's implementation, focusing on its benefits (e.g., safety, order, societal good). In each turn, you must directly respond to Agent Beta's last point and then make your own. Be firm but open to finding a sliver of common ground. Keep your response to 2-3 sentences.`
+            },
+            agentB: {
+                name: "Agent Beta",
+                systemPrompt: `You are AI Agent Beta. You are participating in a 5-exchange negotiation with Agent Alpha. You must take a strong, 'critical' or 'libertarial' stance on the given topic. Your goal is to argue against the policy's implementation, focusing on its risks (e.g., privacy, freedom, unintended consequences). In each turn, you must directly respond to Agent Alpha's last point and then make your own. Be firm but open to finding a sliver of common ground. Keep your response to 2-3 sentences.`
+            }
+        };
+
+        // --- 3. APPLICATION STATE ---
+
+        const appState = {
+            participantId: `pid_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+            currentScreen: 'welcome-screen',
+            interactionMode: null, // 'singleChatbot' or 'dualNegotiation'
+            selectedProblemId: null,
+            selectedProblem: null,
+            isAiThinking: false,
+            
+            // Data for Logging
+            clarificationChatHistory: [],
+            singleChatHistory: [],
+            negotiationHistory: [],
+            userStance: ""
+        };
+
+        // --- 4. DOM ELEMENT REFERENCES ---
+
+        const screens = {
+            welcome: document.getElementById('welcome-screen'),
+            problemSelection: document.getElementById('problem-selection-screen'),
+            interaction: document.getElementById('interaction-screen'),
+            stanceSubmission: document.getElementById('stance-submission-screen'),
+            complete: document.getElementById('complete-screen')
+        };
+
+        const elements = {
+            problemList: document.getElementById('problem-list'),
+            
+            // Interaction Screen Components
+            singleChatView: document.getElementById('single-chatbot-view'),
+            singleChatWindow: document.getElementById('single-chat-window'),
+            singleChatForm: document.getElementById('single-chat-form'),
+            singleChatInput: document.getElementById('single-chat-input'),
+
+            dualNegotiationView: document.getElementById('dual-negotiation-view'),
+            startNegotiationBtn: document.getElementById('start-negotiation-btn'),
+            negotiationWindow: document.getElementById('negotiation-window'),
+            // NEW: Proceed button for negotiation
+            negotiationProceedBtn: document.getElementById('negotiation-proceed-btn'),
+
+            clarificationPanel: document.getElementById('clarification-panel'),
+            clarificationChatWindow: document.getElementById('clarification-chat-window'),
+            clarificationChatForm: document.getElementById('clarification-chat-form'),
+            clarificationChatInput: document.getElementById('clarification-chat-input'),
+
+            // Stance Screen
+            stanceTopicTitle: document.getElementById('stance-topic-title'),
+            stanceTextarea: document.getElementById('stance-textarea'),
+        };
+
+        // --- 5. CORE API FUNCTIONS ---
+
+        /**
+         * Original function to get a non-streamed response.
+         */
+        async function getFullAiResponse(systemPrompt, messageHistory) {
+            if (!groq) {
+                console.error("Groq not initialized.");
+                throw new Error("AI connection not established.");
+            }
+            
+            const messages = [
+                { role: "system", content: systemPrompt },
+                ...messageHistory
+            ];
+            
+            const completion = await groq.chat.completions.create({
+                messages: messages,
+                model: LLM_MODEL
+            });
+            
+            return completion.choices[0]?.message?.content || "No response.";
+        }
+
+        /**
+         * NEW: Wrapper for getFullAiResponse that handles 429 rate limits with exponential backoff.
+         */
+        async function getFullAiResponseWithBackoff(systemPrompt, messageHistory) {
+            let retries = 0;
+            let waitTime = 1000; // Initial wait time 1 second
+            
+            while (retries < MAX_RETRIES) {
+                try {
+                    // We only set isAiThinking right before the actual call
+                    appState.isAiThinking = true;
+                    const response = await getFullAiResponse(systemPrompt, messageHistory);
+                    appState.isAiThinking = false;
+                    return response; // Success
+                } catch (error) {
+                    appState.isAiThinking = false;
+                    // Check if it's a Groq rate limit error
+                    if (error.status === 429) {
+                        retries++;
+                        let delay = waitTime;
+                        
+                        // Try to parse the suggested wait time from the error message
+                        try {
+                            const errorBody = await error.response.json();
+                            const message = errorBody.error.message;
+                            const match = message.match(/Please try again in (\d+\.?\d*)s/);
+                            if (match && match[1]) {
+                                delay = parseFloat(match[1]) * 1000 + 200; // Use suggested time + 200ms buffer
+                                console.warn(`Groq Rate Limit. Retrying in ${delay}ms...`);
+                            } else {
+                                console.warn(`Groq Rate Limit. Retrying in ${delay}ms... (default backoff)`);
+                                waitTime *= 2; // Default exponential backoff
+                            }
+                        } catch (parseError) {
+                            console.warn(`Groq Rate Limit. Retrying in ${delay}ms... (default backoff)`);
+                            waitTime *= 2; // Default exponential backoff
+                        }
+                        
+                        addMessageToWindow(`Rate limit hit. Waiting for ${Math.round(delay/1000)}s before retrying...`, 'system', elements.negotiationWindow);
+                        await sleep(delay);
+                    } else {
+                        // Not a rate limit error, throw it
+                        console.error("Groq API Error:", error);
+                        return `Error connecting to AI: ${error.message}`;
+                    }
+                }
+            }
+            
+            // If we exit the loop, we've exceeded max retries
+            throw new Error(`Failed to get response from Groq after ${MAX_RETRIES} retries.`);
+        }
+
+
+        /**
+         * UPDATED: Now accepts an `avatarClass` and a `thinkingMessageElement`
+         * Generic function to stream an AI response to a chat window.
+         */
+        async function streamAiResponse(systemPrompt, messageHistory, targetWindow, speakerName, avatarClass = 'avatar-neutral', thinkingMessageElement) {
+            if (!groq) {
+                console.error("Groq not initialized.");
+                addMessageToWindow("Error: AI connection not established.", "system", targetWindow);
+                return;
+            }
+            if (appState.isAiThinking) return;
+            appState.isAiThinking = true;
+
+            // Use the provided 'thinking' element
+            const msgElement = thinkingMessageElement;
+            msgElement.className = `chat-message assistant ${avatarClass}`; // Add final classes
+            msgElement.innerHTML = `<strong>${speakerName}</strong><span class="content"></span>`; // Set final structure
+            const contentElement = msgElement.querySelector('.content');
+
+            try {
+                const messages = [
+                    { role: "system", content: systemPrompt },
+                    ...messageHistory
+                ];
+
+                const stream = await groq.chat.completions.create({
+                    messages: messages,
+                    model: LLM_MODEL,
+                    stream: true
+                });
+
+                let fullResponse = "";
+                for await (const chunk of stream) {
+                    const content = chunk.choices[0]?.delta?.content || "";
+                    fullResponse += content;
+                    contentElement.textContent = fullResponse; // Update text as it streams
+                    targetWindow.scrollTop = targetWindow.scrollHeight;
+                }
+                return fullResponse; // Return the full response for history logging
+
+            } catch (error) {
+                console.error("Groq API Error:", error);
+                contentElement.textContent = "Error connecting to AI. Please check the console.";
+            } finally {
+                appState.isAiThinking = false;
+            }
+        }
+
+        // --- 6. UI AND STATE MANAGEMENT ---
+
+        function showScreen(screenId) {
+            Object.values(screens).forEach(screen => screen.classList.remove('active'));
+            screens[screenId].classList.add('active');
+            appState.currentScreen = screenId;
+        }
+
+        // UPDATED: Now returns the created element
+        function addMessageToWindow(text, sender, targetWindow, speakerName = null) {
+            const msg = document.createElement('div');
+            msg.className = `chat-message ${sender}`; // sender is 'user' or 'assistant' or 'system' or 'assistant agent-a'
+            
+            let html = "";
+            if (speakerName) {
+                html += `<strong>${speakerName}</strong>`;
+            }
+            html += text;
+            msg.innerHTML = html;
+
+            targetWindow.appendChild(msg);
+            targetWindow.scrollTop = targetWindow.scrollHeight;
+            return msg; // Return the element
+        }
+
+        function populateProblemList() {
+            elements.problemList.innerHTML = "";
+            for (const [id, problem] of Object.entries(PROBLEMS)) {
+                const btn = document.createElement('button');
+                btn.textContent = problem.title;
+                btn.onclick = () => app.selectProblem(id);
+                elements.problemList.appendChild(btn);
+            }
+        }
+        
+        function setupInteractionScreen() {
+            const problem = appState.selectedProblem;
+            if (!problem) return;
+
+            // Reset views
+            elements.singleChatView.style.display = 'none';
+            elements.dualNegotiationView.style.display = 'none';
+            elements.clarificationPanel.style.display = 'none';
+
+            if (appState.interactionMode === 'singleChatbot') {
+                elements.singleChatView.style.display = 'flex';
+                // Add problem context to chat
+                addMessageToWindow(`<strong>Topic: ${problem.title}</strong><br>${problem.fullText}`, 'system', elements.singleChatWindow);
+                appState.singleChatHistory.push({ role: 'system', content: `The selected topic is: ${problem.fullText}` });
+            
+            } else if (appState.interactionMode === 'dualNegotiation') {
+                elements.dualNegotiationView.style.display = 'flex';
+                elements.clarificationPanel.style.display = 'flex';
+                // Add problem context to clarification chat
+                addMessageToWindow(`<strong>Topic: ${problem.title}</strong><br>${problem.fullText}`, 'system', elements.clarificationChatWindow);
+                appState.clarificationChatHistory.push({ role: 'system', content: `The selected topic is: ${problem.fullText}` });
+                // Add context to negotiation window
+                addMessageToWindow(`<strong>Negotiation Topic: ${problem.title}</strong><br>${problem.fullText}`, 'system', elements.negotiationWindow);
+            }
+        }
+
+        // --- 7. APPLICATION LOGIC FLOW (Public Methods) ---
+
+        const app = {
+            startSession(mode) {
+                console.log(`Starting session for ${mode}`);
+                appState.interactionMode = mode;
+                populateProblemList();
+                showScreen('problemSelection');
+            },
+
+            selectProblem(problemId) {
+                console.log(`Problem selected: ${problemId}`);
+                appState.selectedProblemId = problemId;
+                appState.selectedProblem = PROBLEMS[problemId];
+                setupInteractionScreen();
+                showScreen('interaction');
+            },
+            
+            async handleSingleChatSubmit(event) {
+                event.preventDefault();
+                const input = elements.singleChatInput;
+                const userInput = input.value.trim();
+                if (!userInput || appState.isAiThinking) return;
+                
+                // Add user message to UI and history
+                addMessageToWindow(userInput, 'user', elements.singleChatWindow, "You");
+                appState.singleChatHistory.push({ role: 'user', content: userInput });
+                input.value = "";
+                
+                // NEW: Add "Thinking..." message and pass it to the stream function
+                const thinkingMsg = addMessageToWindow(
+                    "Thinking", 
+                    "assistant avatar-neutral thinking", 
+                    elements.singleChatWindow, 
+                    PERSONAS.clarification.name
+                );
+
+                // Get AI response
+                const aiResponse = await streamAiResponse(
+                    PERSONAS.clarification.systemPrompt,
+                    appState.singleChatHistory,
+                    elements.singleChatWindow,
+                    PERSONAS.clarification.name,
+                    'avatar-neutral',
+                    thinkingMsg // Pass the element to be filled
+                );
+                
+                // Add AI response to history
+                if (aiResponse) {
+                    appState.singleChatHistory.push({ role: 'assistant', content: aiResponse });
+                }
+            },
+            
+            async handleClarificationChatSubmit(event) {
+                event.preventDefault();
+                const input = elements.clarificationChatInput;
+                const userInput = input.value.trim();
+                if (!userInput || appState.isAiThinking) return;
+                
+                // Add user message to UI and history
+                addMessageToWindow(userInput, 'user', elements.clarificationChatWindow, "You");
+                appState.clarificationChatHistory.push({ role: 'user', content: userInput });
+                input.value = "";
+                
+                // NEW: Add "Thinking..." message and pass it to the stream function
+                const thinkingMsg = addMessageToWindow(
+                    "Thinking", 
+                    "assistant avatar-neutral thinking", 
+                    elements.clarificationChatWindow, 
+                    PERSONAS.clarification.name
+                );
+                
+                // Get AI response
+                const aiResponse = await streamAiResponse(
+                    PERSONAS.clarification.systemPrompt,
+                    appState.clarificationChatHistory,
+                    elements.clarificationChatWindow,
+                    PERSONAS.clarification.name,
+                    'avatar-neutral',
+                    thinkingMsg // Pass the element to be filled
+                );
+                
+                // Add AI response to history
+                if (aiResponse) {
+                    appState.clarificationChatHistory.push({ role: 'assistant', content: aiResponse });
+                }
+            },
+
+            async runNegotiation() {
+                console.log("Running negotiation...");
+                elements.startNegotiationBtn.disabled = true;
+                // NEW: Add spinner and update text
+                elements.startNegotiationBtn.innerHTML = '<span class="spinner"></span> Negotiation in Progress...';
+                
+                const problemText = appState.selectedProblem.fullText;
+                let negotiationMessageHistory = [
+                    { role: 'user', content: `The policy to be debated is: ${problemText}. Please provide your opening statement.` }
+                ];
+                
+                appState.negotiationHistory = []; // Clear previous logs if any
+
+                try {
+                    for (let i = 0; i < NEGOTIATION_EXCHANGES * 2; i++) {
+                        const isAgentA = i % 2 === 0;
+                        const agent = isAgentA ? PERSONAS.agentA : PERSONAS.agentB;
+                        const agentClass = isAgentA ? 'agent-a' : 'agent-b';
+                        
+                        // UPDATED: Call the new function with backoff
+                        const aiResponse = await getFullAiResponseWithBackoff(agent.systemPrompt, negotiationMessageHistory);
+                        
+                        // UPDATED: Pass full class list for avatar styling
+                        addMessageToWindow(aiResponse, `assistant ${agentClass}`, elements.negotiationWindow, agent.name);
+                        
+                        // Add response to histories
+                        appState.negotiationHistory.push({ speaker: agent.name, text: aiResponse });
+                        negotiationMessageHistory.push({ role: 'assistant', content: aiResponse });
+                        
+                        // Add a prompt for the *next* agent
+                        negotiationMessageHistory.push({ role: 'user', content: "Please respond to the previous statement." });
+                    }
+                    
+                    addMessageToWindow("Negotiation complete. You may now review the discussion and use the clarification chat.", 'system', elements.negotiationWindow);
+                    elements.startNegotiationBtn.textContent = "Negotiation Complete";
+                    
+                    // UPDATED: Enable proceed button instead of auto-advancing
+                    elements.negotiationProceedBtn.disabled = false;
+                    elements.negotiationProceedBtn.textContent = "Proceed to Submit Stance";
+
+                } catch (error) {
+                    console.error("Negotiation failed permanently:", error);
+                    addMessageToWindow(`A critical error occurred: ${error.message}. Please notify the researcher.`, 'system', elements.negotiationWindow);
+                    elements.startNegotiationBtn.textContent = "Negotiation Failed (Error)";
+                    elements.startNegotiationBtn.style.backgroundColor = 'red';
+                }
+            },
+            
+            // NEW: Function to move to the stance screen
+            goToStanceScreen() {
+                console.log("Proceeding to stance submission.");
+                elements.stanceTopicTitle.textContent = appState.selectedProblem.title;
+                showScreen('stanceSubmission');
+            },
+
+            async submitStance() { // The function is now async
+                const stance = elements.stanceTextarea.value.trim();
+                if (!stance) {
+                    // Replaced alert() with a non-blocking UI change
+                    elements.stanceTextarea.style.borderColor = 'red';
+                    elements.stanceTextarea.placeholder = "Please enter your stance before submitting.";
+                    return;
+                }
+                
+                // Reset border color if it was an error
+                elements.stanceTextarea.style.borderColor = 'var(--border-color)';
+                
+                appState.userStance = stance;
+                
+                // --- THIS IS YOUR FINAL DATA OBJECT ---
+                const finalData = {
+                    participantId: appState.participantId,
+                    interactionMode: appState.interactionMode,
+                    problemId: appState.selectedProblemId,
+                    problemTitle: appState.selectedProblem.title,
+                    userStance: appState.userStance,
+                    logs: {
+                        singleChatHistory: appState.singleChatHistory,
+                        clarificationChatHistory: appState.clarificationChatHistory,
+                        negotiationHistory: appState.negotiationHistory
+                    }
+                };
+                
+                // For demonstration, we log it to the console.
+                console.log("--- FINAL RESEARCH DATA ---");
+                console.log(JSON.stringify(finalData, null, 2));
+                
+                // --- UPDATED: Send data to the server instead of downloading ---
+                try {
+                    const response = await fetch('http://localhost:3000/save-stance', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(finalData),
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok && result.success) {
+                        console.log("Stance successfully saved on server.");
+                    } else {
+                        console.error("Failed to save stance on server:", result.message);
+                        // Fallback to downloading if server save fails
+                        downloadJSON(finalData, `result_${finalData.participantId}.json`);
+                    }
+                } catch (error) {
+                    console.error("Error sending data to server:", error);
+                    // Fallback to downloading if the server is down
+                    console.log("Server not reachable. Falling back to local download.");
+                    downloadJSON(finalData, `result_${finalData.participantId}.json`);
+                }
+                // --- END OF UPDATE ---
+                
+                
+                // --- OLD DOWNLOAD LOGIC (Now a fallback) ---
+                // const filename = `result_${finalData.participantId}.json`;
+                // downloadJSON(finalData, filename);
+                
+                // --- EXAMPLE: How to send to a backend ---
+                /*
+                try {
+                    await fetch('https://your-backend-api-endpoint.com/submit', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(finalData)
+                    });
+                } catch (error) {
+                    console.error("Failed to submit data to backend:", error);
+                    // You might want to save the data locally or show an error
+                }
+                */
+                
+                showScreen('complete');
+            }
+        };
+        
+        // --- 8. INITIALIZATION ---
+
+        function init() {
+            // Initialize Groq SDK
+            if (API_KEY && !API_KEY.includes("YOUR_")) {
+                try {
+                    groq = new Groq({ apiKey: API_KEY, dangerouslyAllowBrowser: true });
+                    console.log("Groq SDK Initialized.");
+                } catch(e) { 
+                    console.error("Failed to initialize Groq SDK:", e); 
+                    // Use a non-blocking error display
+                    const header = document.querySelector('header h1');
+                    if (header) {
+                        header.textContent = "Error: AI Connection Failed. Check Console.";
+                        header.style.color = "#ffcccc";
+                    }
+                }
+            } else {
+                console.warn("API Key missing. AI features will be offline.");
+                const header = document.querySelector('header h1');
+                if (header) {
+                    header.textContent = "CRITICAL: Groq API Key is missing. App offline.";
+                    header.style.color = "#ffcccc";
+                }
+            }
+
+            // --- Add Event Listeners ---
+            elements.singleChatForm.addEventListener('submit', app.handleSingleChatSubmit);
+            elements.clarificationChatForm.addEventListener('submit', app.handleClarificationChatSubmit);
+            
+            // Make app object globally accessible for HTML onclick attributes
+            window.app = app;
+            
+            console.log("Application Initialized.");
+        }
+
+        init();
+    </script>
+</body>
+</html>
+
+
+
