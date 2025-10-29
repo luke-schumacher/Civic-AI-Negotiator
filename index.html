@@ -715,7 +715,7 @@
          */
         async function getFullAiResponseWithBackoff(systemPrompt, messageHistory) {
             let retries = 0;
-            let waitTime = 1000; // Initial wait time 1 second
+            let waitTime = 2000; // Initial wait time 2 seconds
             
             while (retries < MAX_RETRIES) {
                 try {
@@ -991,6 +991,9 @@
                         
                         // Add a prompt for the *next* agent
                         negotiationMessageHistory.push({ role: 'user', content: "Please respond to the previous statement." });
+
+                        // Add a delay between exchanges to help with rate limits
+                        await sleep(1000);
                     }
                     
                     addMessageToWindow("Negotiation complete. You may now review the discussion and use the clarification chat.", 'system', elements.negotiationWindow);
@@ -1044,7 +1047,7 @@
                 document.getElementById('submission-data-input').value = JSON.stringify(finalData, null, 2);
 
                 // Manually submit the form
-                event.target.form.submit();
+                event.target.submit();
 
                 showScreen('complete');
             }
