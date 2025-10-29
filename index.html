@@ -536,7 +536,7 @@
             <h2>Step 3: Submit Your Stance</h2>
             <p>Based on the problem description and your interaction with the AI, please write a brief stance on the policy. Describe your position and your key reasons.</p>
             <p><strong>Topic:</strong> <span id="stance-topic-title"></span></p>
-            <form id="stance-form" name="stance" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+            <form id="stance-form" name="stance" netlify netlify-honeypot="bot-field">
                 <input type="hidden" name="form-name" value="stance" />
                 <p class="hidden">
                     <label>Don’t fill this out if you’re human: <input name="bot-field" /></label>
@@ -1046,10 +1046,13 @@
                 // Populate the hidden input with the JSON data
                 document.getElementById('submission-data-input').value = JSON.stringify(finalData, null, 2);
 
-                // Manually submit the form
-                event.target.submit();
+                const formData = new FormData(event.target);
+                fetch("/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: new URLSearchParams(formData).toString()
+                }).then(() => showScreen('complete')).catch((error) => alert(error));
 
-                showScreen('complete');
             }
         };
         
