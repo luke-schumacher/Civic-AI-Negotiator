@@ -10,7 +10,7 @@
     
     <!-- This allows the Groq SDK to run in a browser environment -->
     <script type="module">
-        window.process = { env: { GROQ_API_KEY: "nope" } };
+        window.process = { env: { GROQ_API_KEY: "YOUR_GROQ_API_KEY_HERE" } };
     </script>
     
     <style>
@@ -538,10 +538,17 @@
             <h2>Step 3: Submit Your Stance</h2>
             <p>Based on the problem description and your interaction with the AI, please write a brief stance on the policy. Describe your position and your key reasons.</p>
             <p><strong>Topic:</strong> <span id="stance-topic-title"></span></p>
-            <textarea id="stance-textarea" placeholder="Enter your stance here..."></textarea>
-            <button id="submit-stance-btn" onclick="app.submitStance()" class="proceed-btn">
-                Submit Final Stance
-            </button>
+            <form id="stance-form" name="stance" method="POST" data-netlify="true" netlify-honeypot="bot-field" style="display: contents;">
+                <input type="hidden" name="form-name" value="stance" />
+                <p class="hidden">
+                    <label>Don’t fill this out if you’re human: <input name="bot-field" /></label>
+                </p>
+                <textarea id="stance-textarea" name="stance" placeholder="Enter your stance here..."></textarea>
+                <input type="hidden" name="submission-data" id="submission-data-input">
+                <button type="submit" id="submit-stance-btn" class="proceed-btn">
+                    Submit Final Stance
+                </button>
+            </form>
         </div>
 
         <!-- Screen 5: Complete -->
@@ -562,7 +569,7 @@
         // --- 1. CONFIGURATION ---
 
         // ⚠️ IMPORTANT: Replace with your Groq API key
-        const API_KEY = "nope"; 
+        const API_KEY = "YOUR_GROQ_API_KEY"; 
         const LLM_MODEL = 'llama-3.1-8b-instant';
         const NEGOTIATION_EXCHANGES = 5; // As per your brief
         const MAX_RETRIES = 5; // Max retries for rate limit
@@ -1010,21 +1017,18 @@
                 showScreen('stanceSubmission');
             },
 
-            async submitStance() { // The function is now async
+            async submitStance(event) {
+                event.preventDefault(); // Prevent default form submission
                 const stance = elements.stanceTextarea.value.trim();
                 if (!stance) {
-                    // Replaced alert() with a non-blocking UI change
                     elements.stanceTextarea.style.borderColor = 'red';
                     elements.stanceTextarea.placeholder = "Please enter your stance before submitting.";
                     return;
                 }
-                
-                // Reset border color if it was an error
+
                 elements.stanceTextarea.style.borderColor = 'var(--border-color)';
-                
                 appState.userStance = stance;
-                
-                // --- THIS IS YOUR FINAL DATA OBJECT ---
+
                 const finalData = {
                     participantId: appState.participantId,
                     interactionMode: appState.interactionMode,
@@ -1037,57 +1041,13 @@
                         negotiationHistory: appState.negotiationHistory
                     }
                 };
-                
-                // For demonstration, we log it to the console.
-                console.log("--- FINAL RESEARCH DATA ---");
-                console.log(JSON.stringify(finalData, null, 2));
-                
-                // --- UPDATED: Send data to the server instead of downloading ---
-                try {
-                    const response = await fetch('http://localhost:3000/save-stance', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(finalData),
-                    });
 
-                    const result = await response.json();
+                // Populate the hidden input with the JSON data
+                document.getElementById('submission-data-input').value = JSON.stringify(finalData, null, 2);
 
-                    if (response.ok && result.success) {
-                        console.log("Stance successfully saved on server.");
-                    } else {
-                        console.error("Failed to save stance on server:", result.message);
-                        // Fallback to downloading if server save fails
-                        downloadJSON(finalData, `result_${finalData.participantId}.json`);
-                    }
-                } catch (error) {
-                    console.error("Error sending data to server:", error);
-                    // Fallback to downloading if the server is down
-                    console.log("Server not reachable. Falling back to local download.");
-                    downloadJSON(finalData, `result_${finalData.participantId}.json`);
-                }
-                // --- END OF UPDATE ---
-                
-                
-                // --- OLD DOWNLOAD LOGIC (Now a fallback) ---
-                // const filename = `result_${finalData.participantId}.json`;
-                // downloadJSON(finalData, filename);
-                
-                // --- EXAMPLE: How to send to a backend ---
-                /*
-                try {
-                    await fetch('https://your-backend-api-endpoint.com/submit', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(finalData)
-                    });
-                } catch (error) {
-                    console.error("Failed to submit data to backend:", error);
-                    // You might want to save the data locally or show an error
-                }
-                */
-                
+                // Manually submit the form
+                event.target.form.submit();
+
                 showScreen('complete');
             }
         };
@@ -1118,9 +1078,12 @@
                 }
             }
 
+            elements.stanceForm = document.getElementById('stance-form');
+
             // --- Add Event Listeners ---
             elements.singleChatForm.addEventListener('submit', app.handleSingleChatSubmit);
             elements.clarificationChatForm.addEventListener('submit', app.handleClarificationChatSubmit);
+            elements.stanceForm.addEventListener('submit', app.submitStance);
             
             // Make app object globally accessible for HTML onclick attributes
             window.app = app;
