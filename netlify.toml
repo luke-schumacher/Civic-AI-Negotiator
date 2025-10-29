@@ -1,6 +1,6 @@
 
 [build]
-  command = "npm install"
+  command = "npm install && sed -i 's|%%GROQ_API_KEY%%|'\"$GROQ_API_KEY\"'|g' index.html"
   publish = "/"
   functions = "netlify/functions"
 

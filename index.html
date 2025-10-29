@@ -9,9 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     
     <!-- This allows the Groq SDK to run in a browser environment -->
-    <script type="module">
-        window.process = { env: { GROQ_API_KEY: "YOUR_GROQ_API_KEY_HERE" } };
-    </script>
+
     
     <style>
         :root {
@@ -569,7 +567,7 @@
         // --- 1. CONFIGURATION ---
 
         // ⚠️ IMPORTANT: Replace with your Groq API key
-        const API_KEY = "YOUR_GROQ_API_KEY"; 
+        const API_KEY = "%%GROQ_API_KEY%%"; 
         const LLM_MODEL = 'llama-3.1-8b-instant';
         const NEGOTIATION_EXCHANGES = 5; // As per your brief
         const MAX_RETRIES = 5; // Max retries for rate limit

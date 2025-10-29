@@ -11,7 +11,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, '../../'))); // Serve static files from the root
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../Civic-AI-Negotiator.html'));
+    res.sendFile(path.join(__dirname, '../../index.html'));
 });
 
 app.post('/save-stance', (req, res) => {
