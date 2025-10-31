@@ -24,11 +24,13 @@
             --shadow: 0 6px 16px rgba(0,0,0,0.08);
             --green-btn: #28a745;
             --green-btn-hover: #218838;
-            /* NEW: Distinct colors for agents */
-            --agent-a-bg: #e6f0ff;
-            --agent-a-border: #00529e;
-            --agent-b-bg: #e6fff0;
-            --agent-b-border: #218838;
+            /* Agent colors - cleaner, more distinct */
+            --agent-for-bg: #e8f5e9;
+            --agent-for-border: #2e7d32;
+            --agent-against-bg: #fff3e0;
+            --agent-against-border: #e65100;
+            --neutral-bg: #e3f2fd;
+            --neutral-border: #1976d2;
         }
 
         /* Responsive base font size */
@@ -226,12 +228,13 @@
             border-radius: 8px;
             padding: 1.5rem;
             background: #fdfdfd;
-            /* UPDATED: Ensures flex children behave */
-            height: 100%; 
+            height: 100%;
             box-sizing: border-box;
         }
-        
-        #clarification-panel { flex: 0.8; }
+
+        /* Give more space to negotiation panel */
+        #main-interaction { flex: 2; }
+        #clarification-panel { flex: 1; }
         #single-chatbot-view { width: 100%; }
 
         /* UPDATED: This container now fills height */
@@ -300,15 +303,17 @@
             /* FIX: Path: 'assets/avatar-neutral.svg' */
             background-image: url('assets/avatar-neutral.svg');
         }
-        /* ASSET: Agent Alpha Avatar */
-        .chat-message.agent-a::before {
-            /* FIX: Path: 'assets/avatar-alpha.svg' */
+        /* ASSET: Agent For Avatar */
+        .chat-message.agent-for::before {
             background-image: url('assets/avatar-alpha.svg');
         }
-        /* ASSET: Agent Beta Avatar */
-        .chat-message.agent-b::before {
-            /* FIX: Path: 'assets/avatar-beta.svg' */
+        /* ASSET: Agent Against Avatar */
+        .chat-message.agent-against::before {
             background-image: url('assets/avatar-beta.svg');
+        }
+        /* ASSET: Fact Checker Avatar */
+        .chat-message.fact-checker::before {
+            background-image: url('assets/avatar-neutral.svg');
         }
         
         /* NEW: "Thinking" message styling */
@@ -336,19 +341,19 @@
         }
         .chat-message.assistant strong { color: #555; }
         
-        /* UPDATED: System message styling */
+        /* System message styling - more concise */
         .chat-message.system {
-            background: #fffbe6;
-            color: #584c0c;
-            border: 1px solid #ffeeba;
+            background: #f5f5f5;
+            color: #555;
+            border: 1px solid #ddd;
             align-self: center;
-            font-style: italic;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             width: 100%;
             max-width: 100%;
             text-align: center;
             box-sizing: border-box;
-            border-radius: 8px;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
         }
 
         .chat-input {
@@ -382,20 +387,28 @@
             box-sizing: border-box; /* Important for padding */
         }
         
-        /* UPDATED: Agent-specific colors */
-        #dual-negotiation-view .chat-message.agent-a {
-            background: var(--agent-a-bg);
-            border-left: 4px solid var(--agent-a-border);
+        /* Agent-specific colors */
+        #dual-negotiation-view .chat-message.agent-for {
+            background: var(--agent-for-bg);
+            border-left: 4px solid var(--agent-for-border);
         }
-        #dual-negotiation-view .chat-message.agent-b {
-            background: var(--agent-b-bg);
-            border-left: 4px solid var(--agent-b-border);
+        #dual-negotiation-view .chat-message.agent-against {
+            background: var(--agent-against-bg);
+            border-left: 4px solid var(--agent-against-border);
         }
-        #dual-negotiation-view .chat-message.agent-a strong {
-            color: var(--agent-a-border);
+        #dual-negotiation-view .chat-message.agent-for strong {
+            color: var(--agent-for-border);
         }
-        #dual-negotiation-view .chat-message.agent-b strong {
-            color: var(--agent-b-border);
+        #dual-negotiation-view .chat-message.agent-against strong {
+            color: var(--agent-against-border);
+        }
+        #dual-negotiation-view .chat-message.fact-checker {
+            background: var(--neutral-bg);
+            border-left: 4px solid var(--neutral-border);
+            font-size: 0.95rem;
+        }
+        #dual-negotiation-view .chat-message.fact-checker strong {
+            color: var(--neutral-border);
         }
         
         /* NEW: Proceed Button Styling */
@@ -433,7 +446,7 @@
             margin-bottom: 1rem;
         }
         
-        /* NEW: Loading spinner */
+        /* Loading spinner */
         .spinner {
             width: 1.25em;
             height: 1.25em;
@@ -444,6 +457,41 @@
         }
         @keyframes spin {
             to { transform: rotate(360deg); }
+        }
+
+        /* TLDR Section */
+        .tldr-section {
+            background: #f8f9fa;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin: 1rem 0;
+        }
+        .tldr-section h3 {
+            margin: 0 0 0.75rem 0;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            font-family: 'Roboto Mono', monospace;
+        }
+        .tldr-section ul {
+            margin: 0;
+            padding-left: 1.5rem;
+            line-height: 1.6;
+        }
+        .tldr-section li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Back button styling */
+        .back-btn {
+            background-color: #6c757d;
+            margin-bottom: 1rem;
+            padding: 0.6rem 1.25rem;
+            font-size: 0.95rem;
+            align-self: flex-start;
+        }
+        .back-btn:hover {
+            background-color: #5a6268;
         }
 
     </style>
@@ -481,10 +529,17 @@
 
         <!-- Screen 2: Problem Selection -->
         <div class="screen" id="problem-selection-screen">
-            <h2>Step 1: Select a Policy Problem</h2>
-            <p>Please select the topic you feel you know the **least** about from the options below.</p>
+            <button class="back-btn" onclick="app.goBack()">← Back</button>
+            <h2>Step 1: Select a Policy Topic</h2>
+            <p>Choose a topic to explore, or define your own below.</p>
             <div class="button-group" id="problem-list">
                 <!-- Problems will be dynamically inserted here -->
+            </div>
+            <div style="margin-top: 2rem;">
+                <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Or define your own topic:</h3>
+                <input type="text" id="custom-topic-title" placeholder="Topic title (e.g., Universal Basic Income)" style="width: 100%; padding: 0.75rem; margin-bottom: 0.5rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem;">
+                <textarea id="custom-topic-description" placeholder="Brief description of the topic and key points of debate..." style="width: 100%; height: 100px; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; resize: vertical;"></textarea>
+                <button onclick="app.selectCustomTopic()" style="margin-top: 0.5rem;">Use Custom Topic</button>
             </div>
         </div>
 
@@ -494,48 +549,50 @@
             <div id="main-interaction">
                 <!-- Group 1: Single Chatbot View -->
                 <div id="single-chatbot-view" style="display: none;">
-                    <h2>Step 2: Discuss the Topic</h2>
-                    <p>Use the chat window below to ask questions and clarify your understanding of the policy. The AI will act as a neutral informational assistant.</p>
+                    <button class="back-btn" onclick="app.goBack()">← Back</button>
+                    <h2>Step 2: Explore the Topic</h2>
+                    <p>Ask questions to understand the policy better.</p>
                     <div class="chat-window" id="single-chat-window"></div>
                     <form class="chat-input" id="single-chat-form">
                         <input type="text" id="single-chat-input" placeholder="Ask a question..." autocomplete="off">
                         <button type="submit">Send</button>
                     </form>
-                    <!-- NEW: Continuity Fix for Group 1 -->
                     <button class="proceed-btn" onclick="app.goToStanceScreen()">
-                        I'm done, proceed to submit stance
+                        Proceed to Submit Stance
                     </button>
                 </div>
 
                 <!-- Group 2: Dual-AI Negotiation View -->
                 <div id="dual-negotiation-view" style="display: none;">
-                    <h2>Step 2: Observe the Negotiation</h2>
-                    <p>You will observe two AI agents debating the policy. They will hold opposing views and try to find common ground. The negotiation is limited to 5 exchanges.</p>
-                    <button id="start-negotiation-btn" onclick="app.runNegotiation()">Start Negotiation</button>
+                    <button class="back-btn" onclick="app.goBack()">← Back</button>
+                    <h2>Step 2: Observe AI Debate</h2>
+                    <p>Watch two AI agents debate opposing sides. Use the clarification chat to ask questions.</p>
+                    <button id="start-negotiation-btn" onclick="app.runNegotiation()">Start Debate</button>
                     <div class="chat-window" id="negotiation-window"></div>
-                    <!-- NEW: Continuity Fix for Group 2 -->
+                    <div id="tldr-container"></div>
                     <button id="negotiation-proceed-btn" class="proceed-btn" onclick="app.goToStanceScreen()" disabled>
-                        Read negotiation & use chat, then proceed
+                        Proceed to Submit Stance
                     </button>
                 </div>
             </div>
 
             <!-- This panel is ONLY for Group 2 -->
             <div id="clarification-panel" style="display: none;">
-                <h3>Clarification Chat</h3>
-                <p>You can use this *separate* chat to ask the neutral AI for definitions or factual clarifications at any time.</p>
+                <h3>Ask Questions</h3>
+                <p>Ask the neutral AI for factual clarifications.</p>
                 <div class="chat-window" id="clarification-chat-window"></div>
                 <form class="chat-input" id="clarification-chat-form">
-                    <input type="text" id="clarification-chat-input" placeholder="Ask for clarification..." autocomplete="off">
+                    <input type="text" id="clarification-chat-input" placeholder="Ask a question..." autocomplete="off">
                     <button type="submit">Send</button>
                 </form>
             </div>
         </div>
-        
+
         <!-- Screen 4: Stance Submission -->
         <div class="screen" id="stance-submission-screen">
+            <button class="back-btn" onclick="app.goBack()">← Back</button>
             <h2>Step 3: Submit Your Stance</h2>
-            <p>Based on the problem description and your interaction with the AI, please write a brief stance on the policy. Describe your position and your key reasons.</p>
+            <p>Write your position on the policy based on what you learned.</p>
             <p><strong>Topic:</strong> <span id="stance-topic-title"></span></p>
             <form id="stance-form" name="stance" netlify netlify-honeypot="bot-field">
                 <input type="hidden" name="form-name" value="stance" />
@@ -568,9 +625,9 @@
         // --- 1. CONFIGURATION ---
 
         // ⚠️ IMPORTANT: Replace with your Groq API key
-        const API_KEY = "%%GROQ_API_KEY%%"; 
+        const API_KEY = "%%GROQ_API_KEY%%";
         const LLM_MODEL = 'llama-3.1-8b-instant';
-        const NEGOTIATION_EXCHANGES = 5; // As per your brief
+        const NEGOTIATION_EXCHANGES = 3; // Number of back-and-forth exchanges
         const MAX_RETRIES = 5; // Max retries for rate limit
 
         let groq;
@@ -623,15 +680,23 @@
         const PERSONAS = {
             clarification: {
                 name: "Neutral Assistant",
-                systemPrompt: "You are a neutral, impartial AI assistant. Your sole purpose is to provide factual, unbiased definitions and explanations about policy topics. Do not take a stance or offer opinions. Keep responses concise and purely informational. The user is a research participant. Greet them once and then answer their questions directly."
+                systemPrompt: "You are a neutral, impartial AI assistant providing factual information. Answer questions concisely with verified facts. No opinions or stances. Keep responses brief and informational."
             },
-            agentA: {
-                name: "Agent Alpha",
-                systemPrompt: `You are AI Agent Alpha. You are participating in a 5-exchange negotiation with Agent Beta. You must take a strong, 'pro-policy' or 'interventionist' stance on the given topic. Your goal is to argue for the policy's implementation, focusing on its benefits (e.g., safety, order, societal good). In each turn, you must directly respond to Agent Beta's last point and then make your own. Be firm but open to finding a sliver of common ground. Keep your response to 2-3 sentences.`
+            factChecker: {
+                name: "Fact Checker",
+                systemPrompt: "You are a fact-checking AI. Review the argument presented and verify one key factual claim. Be brief (1-2 sentences). Start with 'Fact check:' and note if the claim is accurate, needs context, or is misleading. Cite evidence when possible."
             },
-            agentB: {
-                name: "Agent Beta",
-                systemPrompt: `You are AI Agent Beta. You are participating in a 5-exchange negotiation with Agent Alpha. You must take a strong, 'critical' or 'libertarial' stance on the given topic. Your goal is to argue against the policy's implementation, focusing on its risks (e.g., privacy, freedom, unintended consequences). In each turn, you must directly respond to Agent Alpha's last point and then make your own. Be firm but open to finding a sliver of common ground. Keep your response to 2-3 sentences.`
+            agentFor: {
+                name: "Agent For",
+                systemPrompt: `You are arguing IN FAVOR of the policy. Focus on evidence-based benefits: proven outcomes, research data, expert consensus, and real-world examples. Address the opposing argument directly with facts, then present your strongest factual point. Be concise (2-3 sentences). Prioritize credible sources and logical reasoning over emotional appeals.`
+            },
+            agentAgainst: {
+                name: "Agent Against",
+                systemPrompt: `You are arguing AGAINST the policy. Focus on evidence-based concerns: documented risks, research findings, expert warnings, and precedent cases. Address the supporting argument directly with facts, then present your strongest factual point. Be concise (2-3 sentences). Prioritize credible sources and logical reasoning over emotional appeals.`
+            },
+            summarizer: {
+                name: "Summarizer",
+                systemPrompt: "You are a neutral summarizer. Create a brief, balanced TLDR of the negotiation in 3-4 bullet points. Highlight the main argument from each side and any common ground identified. Be objective and concise."
             }
         };
 
@@ -859,17 +924,17 @@
             if (appState.interactionMode === 'singleChatbot') {
                 elements.singleChatView.style.display = 'flex';
                 // Add problem context to chat
-                addMessageToWindow(`<strong>Topic: ${problem.title}</strong><br>${problem.fullText}`, 'system', elements.singleChatWindow);
+                addMessageToWindow(`<strong>${problem.title}</strong>`, 'system', elements.singleChatWindow);
                 appState.singleChatHistory.push({ role: 'system', content: `The selected topic is: ${problem.fullText}` });
-            
+
             } else if (appState.interactionMode === 'dualNegotiation') {
                 elements.dualNegotiationView.style.display = 'flex';
                 elements.clarificationPanel.style.display = 'flex';
                 // Add problem context to clarification chat
-                addMessageToWindow(`<strong>Topic: ${problem.title}</strong><br>${problem.fullText}`, 'system', elements.clarificationChatWindow);
+                addMessageToWindow(`<strong>${problem.title}</strong>`, 'system', elements.clarificationChatWindow);
                 appState.clarificationChatHistory.push({ role: 'system', content: `The selected topic is: ${problem.fullText}` });
                 // Add context to negotiation window
-                addMessageToWindow(`<strong>Negotiation Topic: ${problem.title}</strong><br>${problem.fullText}`, 'system', elements.negotiationWindow);
+                addMessageToWindow(`<strong>${problem.title}</strong>`, 'system', elements.negotiationWindow);
             }
         }
 
@@ -964,59 +1029,103 @@
             async runNegotiation() {
                 console.log("Running negotiation...");
                 elements.startNegotiationBtn.disabled = true;
-                // NEW: Add spinner and update text
-                elements.startNegotiationBtn.innerHTML = '<span class="spinner"></span> Negotiation in Progress...';
-                
+                elements.startNegotiationBtn.innerHTML = '<span class="spinner"></span> Debate in Progress...';
+
                 const problemText = appState.selectedProblem.fullText;
                 let negotiationMessageHistory = [
-                    { role: 'user', content: `The policy to be debated is: ${problemText}. Please provide your opening statement.` }
+                    { role: 'user', content: `The policy to be debated is: ${problemText}. Provide your opening statement with evidence-based arguments.` }
                 ];
-                
-                appState.negotiationHistory = []; // Clear previous logs if any
+
+                appState.negotiationHistory = [];
 
                 try {
                     for (let i = 0; i < NEGOTIATION_EXCHANGES * 2; i++) {
-                        const isAgentA = i % 2 === 0;
-                        const agent = isAgentA ? PERSONAS.agentA : PERSONAS.agentB;
-                        const agentClass = isAgentA ? 'agent-a' : 'agent-b';
-                        
-                        // UPDATED: Call the new function with backoff
+                        const isAgentFor = i % 2 === 0;
+                        const agent = isAgentFor ? PERSONAS.agentFor : PERSONAS.agentAgainst;
+                        const agentClass = isAgentFor ? 'agent-for' : 'agent-against';
+
+                        // Get agent response
                         const aiResponse = await getFullAiResponseWithBackoff(agent.systemPrompt, negotiationMessageHistory);
-                        
-                        // UPDATED: Pass full class list for avatar styling
                         addMessageToWindow(aiResponse, `assistant ${agentClass}`, elements.negotiationWindow, agent.name);
-                        
-                        // Add response to histories
+
                         appState.negotiationHistory.push({ speaker: agent.name, text: aiResponse });
                         negotiationMessageHistory.push({ role: 'assistant', content: aiResponse });
-                        
-                        // Add a prompt for the *next* agent
-                        negotiationMessageHistory.push({ role: 'user', content: "Please respond to the previous statement." });
 
-                        // Add a delay between exchanges to help with rate limits
+                        // Add fact-checking after every other exchange (after both agents spoke once)
+                        if (i % 2 === 1 && i < NEGOTIATION_EXCHANGES * 2 - 1) {
+                            await sleep(500);
+                            const factCheckPrompt = [
+                                { role: 'user', content: `Review this argument: "${aiResponse}". Fact-check one key claim.` }
+                            ];
+                            const factCheck = await getFullAiResponseWithBackoff(PERSONAS.factChecker.systemPrompt, factCheckPrompt);
+                            addMessageToWindow(factCheck, 'assistant fact-checker', elements.negotiationWindow, PERSONAS.factChecker.name);
+                        }
+
+                        negotiationMessageHistory.push({ role: 'user', content: "Respond to the previous argument with evidence." });
                         await sleep(1000);
                     }
-                    
-                    addMessageToWindow("Negotiation complete. You may now review the discussion and use the clarification chat.", 'system', elements.negotiationWindow);
-                    elements.startNegotiationBtn.textContent = "Negotiation Complete";
-                    
-                    // UPDATED: Enable proceed button instead of auto-advancing
+
+                    addMessageToWindow("Debate complete.", 'system', elements.negotiationWindow);
+
+                    // Generate TLDR
+                    const tldrPrompt = [
+                        { role: 'user', content: `Summarize this debate in 3-4 bullet points:\n${appState.negotiationHistory.map(h => `${h.speaker}: ${h.text}`).join('\n\n')}` }
+                    ];
+                    const tldr = await getFullAiResponseWithBackoff(PERSONAS.summarizer.systemPrompt, tldrPrompt);
+
+                    // Display TLDR
+                    const tldrContainer = document.getElementById('tldr-container');
+                    tldrContainer.innerHTML = `<div class="tldr-section"><h3>Summary</h3>${tldr.replace(/\n/g, '<br>')}</div>`;
+
+                    elements.startNegotiationBtn.textContent = "Debate Complete";
                     elements.negotiationProceedBtn.disabled = false;
                     elements.negotiationProceedBtn.textContent = "Proceed to Submit Stance";
 
                 } catch (error) {
-                    console.error("Negotiation failed permanently:", error);
-                    addMessageToWindow(`A critical error occurred: ${error.message}. Please notify the researcher.`, 'system', elements.negotiationWindow);
-                    elements.startNegotiationBtn.textContent = "Negotiation Failed (Error)";
+                    console.error("Negotiation failed:", error);
+                    addMessageToWindow(`Error: ${error.message}`, 'system', elements.negotiationWindow);
+                    elements.startNegotiationBtn.textContent = "Debate Failed";
                     elements.startNegotiationBtn.style.backgroundColor = 'red';
                 }
             },
             
-            // NEW: Function to move to the stance screen
+            // Function to move to the stance screen
             goToStanceScreen() {
                 console.log("Proceeding to stance submission.");
                 elements.stanceTopicTitle.textContent = appState.selectedProblem.title;
                 showScreen('stanceSubmission');
+            },
+
+            // Back button navigation
+            goBack() {
+                const currentScreen = appState.currentScreen;
+                if (currentScreen === 'problemSelection') {
+                    showScreen('welcome');
+                } else if (currentScreen === 'interaction') {
+                    showScreen('problemSelection');
+                } else if (currentScreen === 'stanceSubmission') {
+                    showScreen('interaction');
+                }
+            },
+
+            // Custom topic selection
+            selectCustomTopic() {
+                const title = document.getElementById('custom-topic-title').value.trim();
+                const description = document.getElementById('custom-topic-description').value.trim();
+
+                if (!title || !description) {
+                    alert('Please provide both a title and description for your custom topic.');
+                    return;
+                }
+
+                // Create a custom problem object
+                const customId = 'custom-' + Date.now();
+                PROBLEMS[customId] = {
+                    title: title,
+                    fullText: description
+                };
+
+                app.selectProblem(customId);
             },
 
             async submitStance(event) {
