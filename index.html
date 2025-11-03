@@ -3,46 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Civic Policy AI Interaction Study</title>
+    <title>Civic Engagement AI Interaction Study</title>
+
+    <!-- Open Graph meta tags for link previews -->
+    <meta property="og:title" content="Civic Engagement AI Interaction Study">
+    <meta property="og:description" content="Interactive research study exploring AI-assisted decision-making on civic topics through single-chatbot dialogue and dual-AI debate formats.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://civic-ai-debate.netlify.app/">
+
     <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     
     <!-- This allows the Groq SDK to run in a browser environment -->
 
     
     <style>
         :root {
-            /* Professional, clean color palette */
-            --bg-color: #f8f9fa;
-            --text-color: #1a1a1a;
-            --primary-color: #2563eb;
-            --primary-hover: #1d4ed8;
-            --secondary-color: #f1f5f9;
-            --border-color: #e2e8f0;
-            --container-bg: #ffffff;
-            --shadow: 0 1px 3px rgba(0,0,0,0.1);
-            --shadow-lg: 0 4px 6px rgba(0,0,0,0.07);
-            --green-btn: #10b981;
-            --green-btn-hover: #059669;
+            /* Cool, subtle color palette */
+            --bg-color: #f5f1ed;
+            --text-color: #3d4247;
+            --primary-color: #2c3e50;
+            --primary-hover: #1e2d3d;
+            --secondary-color: #e8e9ea;
+            --border-color: #c5c8ca;
+            --container-bg: #fafaf8;
+            --shadow: 0 2px 8px rgba(61, 66, 71, 0.08);
+            --shadow-lg: 0 8px 24px rgba(61, 66, 71, 0.12);
+            --green-btn: #2c3e50;
+            --green-btn-hover: #1e2d3d;
 
-            /* Agent colors - professional and distinct */
-            --agent-for-bg: #f0fdf4;
-            --agent-for-border: #16a34a;
-            --agent-for-accent: #dcfce7;
-            --agent-against-bg: #fef2f2;
-            --agent-against-border: #dc2626;
-            --agent-against-accent: #fee2e2;
-            --neutral-bg: #eff6ff;
-            --neutral-border: #3b82f6;
+            /* Agent colors - cool, muted tones */
+            --agent-for-bg: #dff0e8;
+            --agent-for-border: #4a8c6f;
+            --agent-for-accent: #c5e4d9;
+            --agent-against-bg: #f5e6e6;
+            --agent-against-border: #b56b6b;
+            --agent-against-accent: #e8d0d0;
+            --neutral-bg: #e3e7f5;
+            --neutral-border: #6b7bb8;
         }
 
         /* Responsive base font size */
         html { font-size: 100%; }
 
+        /* Hide honeypot field for spam protection */
+        .hidden { display: none; }
+
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #000000;
             color: var(--text-color);
             display: flex;
             justify-content: center;
@@ -67,34 +77,23 @@
         }
 
         header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
-            color: white;
-            padding: 1.75rem 2rem;
+            background: linear-gradient(135deg, #1e2d3d 0%, #2c3e50 100%);
+            color: #f5f1ed;
+            padding: 2.5rem 2rem;
             text-align: center;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 1rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-bottom: 2px solid var(--primary-color);
         }
-        
-        /* ASSET: Header Logo */
-        .logo-placeholder {
-            width: 40px; 
-            height: 40px;
-            /* ASSET: Path: 'assets/logo.svg' */
-            background: url('assets/logo.svg') no-repeat center center;
-            background-size: contain;
-            /* Fallback color if logo fails */
-            background-color: rgba(255,255,255,0.2);
-            border-radius: 8px;
-        }
-        
+
         header h1 {
             margin: 0;
-            font-size: 1.5rem;
-            font-weight: 700;
-            letter-spacing: -0.02em;
+            font-size: 2.5rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            font-family: 'Space Grotesk', sans-serif;
+            color: #e8dfd5;
         }
 
         .screen { display: none; }
@@ -111,49 +110,59 @@
             color: var(--text-color);
             margin-top: 0;
             margin-bottom: 0.5rem;
-            font-size: 2rem;
-            font-weight: 700;
-            letter-spacing: -0.03em;
+            font-size: 2.75rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* Step titles - smaller than welcome */
+        #problem-selection-screen h2,
+        #interaction-screen h2,
+        #stance-screen h2 {
+            font-size: 1.75rem;
         }
 
         h3 {
             color: var(--text-color);
-            font-size: 1.25rem;
+            font-size: 1.35rem;
             font-weight: 600;
             margin-top: 0;
             margin-bottom: 0.75rem;
+            font-family: 'Space Grotesk', sans-serif;
         }
 
         p, li {
             line-height: 1.7;
             font-size: 1rem;
-            color: #4b5563;
+            color: #5d6369;
         }
 
         button {
             background-color: var(--primary-color);
-            color: white;
+            color: #ffffff;
             border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
+            padding: 0.875rem 1.75rem;
+            border-radius: 6px;
             font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.15s ease;
+            transition: all 0.2s ease;
             font-family: 'Inter', sans-serif;
             box-shadow: var(--shadow);
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
+            letter-spacing: 0.01em;
         }
         button:hover {
             background-color: var(--primary-hover);
             box-shadow: var(--shadow-lg);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
         }
         button:disabled {
-            background-color: #9ca3af;
+            background-color: #b8bcc1;
             cursor: not-allowed;
             box-shadow: none;
             transform: none;
@@ -169,7 +178,7 @@
             margin-top: 2rem;
         }
         .welcome-button-group button {
-            background-color: white;
+            background-color: var(--container-bg);
             color: var(--text-color);
             text-align: left;
             border: 2px solid var(--border-color);
@@ -178,24 +187,25 @@
             display: flex;
             align-items: center;
             padding: 2rem 1.5rem;
-            transition: all 0.2s ease;
+            transition: all 0.25s ease;
             box-shadow: var(--shadow);
         }
         .welcome-button-group button:hover {
-            background-color: white;
+            background-color: var(--container-bg);
             border-color: var(--primary-color);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(45, 37, 32, 0.15);
+            transform: translateY(-3px);
         }
         .welcome-button-group button div {
-            font-size: 1.1rem;
-            font-weight: 700;
+            font-size: 1.15rem;
+            font-weight: 600;
             color: var(--text-color);
+            font-family: 'Space Grotesk', sans-serif;
         }
         .welcome-button-group button span {
-            font-weight: 500;
+            font-weight: 400;
             font-size: 0.9rem;
-            color: #6b7280;
+            color: #5d6369;
         }
         
         /* ASSET: Button Icons */
@@ -216,17 +226,17 @@
             gap: 0.75rem;
         }
         .button-group button {
-            background-color: white;
+            background-color: var(--container-bg);
             color: var(--text-color);
             text-align: left;
             border: 2px solid var(--border-color);
-            padding: 1rem 1.5rem;
+            padding: 1.125rem 1.5rem;
             font-size: 1rem;
         }
         .button-group button:hover {
-            background-color: white;
+            background-color: var(--container-bg);
             border-color: var(--primary-color);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
             box-shadow: var(--shadow-lg);
         }
 
@@ -246,19 +256,19 @@
             border: 2px solid var(--border-color);
             border-radius: 12px;
             padding: 2rem;
-            background: white;
+            background: var(--container-bg);
             height: 100%;
             box-sizing: border-box;
             box-shadow: var(--shadow);
         }
 
-        /* Give more space to negotiation panel */
+        /* Give more space to debate panel */
         #main-interaction { flex: 2; }
         #clarification-panel { flex: 1; }
         #single-chatbot-view { width: 100%; }
 
         /* UPDATED: This container now fills height */
-        #single-chatbot-view, #dual-negotiation-view {
+        #single-chatbot-view, #dual-debate-view {
             display: flex;
             flex-direction: column;
             height: 100%;
@@ -287,14 +297,14 @@
             font-size: 0.95rem;
         }
         .chat-message.user {
-            background: var(--primary-color);
-            color: white;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+            color: #ffffff;
             align-self: flex-end;
             border-radius: 12px 12px 2px 12px;
             box-shadow: var(--shadow);
         }
         .chat-message.assistant {
-            background: white;
+            background: var(--container-bg);
             color: var(--text-color);
             align-self: flex-start;
             border-radius: 12px 12px 12px 2px;
@@ -357,7 +367,7 @@
         .chat-message strong {
             display: block;
             margin-bottom: 0.25rem;
-            font-family: 'Roboto Mono', monospace;
+            font-family: 'Inter', sans-serif;
             color: var(--primary-color);
             font-size: 0.9rem;
         }
@@ -366,10 +376,26 @@
         /* System message styling */
         .chat-message.system {
             background: var(--secondary-color);
-            color: #64748b;
+            color: #5b6570;
             border: 1px solid var(--border-color);
             align-self: center;
             font-size: 0.875rem;
+            width: 100%;
+            max-width: 100%;
+            text-align: center;
+            box-sizing: border-box;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-weight: 500;
+        }
+
+        /* Topic introduction message styling */
+        .chat-message.topic-intro {
+            background: #fffaeb;
+            color: #3d4247;
+            border: 1px solid #f7e7b3;
+            align-self: center;
+            font-size: 0.9rem;
             width: 100%;
             max-width: 100%;
             text-align: center;
@@ -419,31 +445,31 @@
         }
         
         /* Agent-specific colors */
-        #dual-negotiation-view .chat-message.agent-for {
+        #dual-debate-view .chat-message.agent-for {
             background: var(--agent-for-bg);
             border: 2px solid var(--agent-for-border);
             border-left-width: 4px;
         }
-        #dual-negotiation-view .chat-message.agent-against {
+        #dual-debate-view .chat-message.agent-against {
             background: var(--agent-against-bg);
             border: 2px solid var(--agent-against-border);
             border-left-width: 4px;
         }
-        #dual-negotiation-view .chat-message.agent-for strong {
+        #dual-debate-view .chat-message.agent-for strong {
             color: var(--agent-for-border);
             font-weight: 700;
         }
-        #dual-negotiation-view .chat-message.agent-against strong {
+        #dual-debate-view .chat-message.agent-against strong {
             color: var(--agent-against-border);
             font-weight: 700;
         }
-        #dual-negotiation-view .chat-message.fact-checker {
+        #dual-debate-view .chat-message.fact-checker {
             background: var(--neutral-bg);
             border: 2px solid var(--neutral-border);
             border-left-width: 4px;
             font-size: 0.9rem;
         }
-        #dual-negotiation-view .chat-message.fact-checker strong {
+        #dual-debate-view .chat-message.fact-checker strong {
             color: var(--neutral-border);
             font-weight: 700;
         }
@@ -479,7 +505,7 @@
             /* ASSET: Path: 'assets/icon-complete.svg' */
             background: url('assets/icon-complete.svg') no-repeat center center;
             background-size: contain;
-            background-color: #e6fff0;
+            background-color: #e6f0ed;
             border-radius: 50%;
             padding: 1rem;
             margin-bottom: 1rem;
@@ -500,7 +526,7 @@
 
         /* TLDR Section */
         .tldr-section {
-            background: linear-gradient(135deg, #eff6ff 0%, #e0f2fe 100%);
+            background: linear-gradient(135deg, #f0f1f3 0%, #e8eaed 100%);
             border: 2px solid var(--primary-color);
             border-radius: 12px;
             padding: 1.5rem;
@@ -514,18 +540,22 @@
             font-weight: 700;
         }
         .tldr-section ul {
-            margin: 0;
-            padding-left: 1.5rem;
-            line-height: 1.8;
+            margin: 0.5rem 0 0 0;
+            padding-left: 1.75rem;
+            line-height: 1.9;
         }
         .tldr-section li {
-            margin-bottom: 0.75rem;
+            margin-bottom: 1rem;
             color: var(--text-color);
+            font-size: 1rem;
+        }
+        .tldr-section li:last-child {
+            margin-bottom: 0;
         }
 
         /* Back button styling */
         .back-btn {
-            background-color: #64748b;
+            background-color: var(--primary-color);
             margin-bottom: 1.5rem;
             padding: 0.65rem 1.25rem;
             font-size: 0.9rem;
@@ -533,7 +563,254 @@
             font-weight: 500;
         }
         .back-btn:hover {
-            background-color: #475569;
+            background-color: var(--primary-hover);
+        }
+
+        /* Mobile Responsive Styles */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 0.5rem;
+            }
+
+            #app-container {
+                max-width: 100%;
+                min-height: 100vh;
+                border-radius: 8px;
+            }
+
+            header {
+                padding: 1.5rem 1rem;
+            }
+
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            .screen.active {
+                padding: 1.5rem 1rem;
+                gap: 1.5rem;
+            }
+
+            h2 {
+                font-size: 1.4rem;
+            }
+
+            p, li {
+                font-size: 0.95rem;
+            }
+
+            button {
+                padding: 0.75rem 1.5rem;
+                font-size: 0.9rem;
+            }
+
+            .welcome-button-group {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .welcome-button-group button {
+                max-width: 100%;
+                padding: 1.5rem 1rem;
+            }
+
+            .button-icon {
+                width: 40px;
+                height: 40px;
+            }
+
+            .button-group button {
+                padding: 1rem 1.25rem;
+                font-size: 0.95rem;
+            }
+
+            #interaction-screen {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            #main-interaction, #clarification-panel {
+                padding: 1.5rem;
+                box-sizing: border-box;
+                max-width: 100%;
+            }
+
+            .chat-window {
+                min-height: 250px;
+                overflow-x: hidden;
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .chat-message {
+                max-width: 95%;
+                font-size: 0.9rem;
+                padding: 0.75rem 1rem;
+                overflow-wrap: break-word;
+                word-wrap: break-word;
+                word-break: break-word;
+            }
+
+            .chat-message.assistant {
+                padding-left: 50px;
+            }
+
+            .chat-message.assistant::before {
+                width: 35px;
+                height: 35px;
+                left: 8px;
+                top: 8px;
+            }
+
+            .chat-input input {
+                font-size: 0.9rem;
+                padding: 0.65rem 0.85rem;
+            }
+
+            #stance-submission-screen textarea {
+                height: 200px;
+                font-size: 0.9rem;
+                padding: 0.85rem;
+            }
+
+            .tldr-section {
+                padding: 1.25rem;
+            }
+
+            .tldr-section h3 {
+                font-size: 1.1rem;
+            }
+
+            .tldr-section li {
+                font-size: 0.95rem;
+            }
+
+            .back-btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.85rem;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            body {
+                padding: 0.25rem;
+            }
+
+            #app-container {
+                border-radius: 4px;
+            }
+
+            header {
+                padding: 1.25rem 0.75rem;
+            }
+
+            header h1 {
+                font-size: 1.25rem;
+            }
+
+            .screen.active {
+                padding: 1.25rem 0.85rem;
+                gap: 1.25rem;
+            }
+
+            h2 {
+                font-size: 1.25rem;
+            }
+
+            p, li {
+                font-size: 0.9rem;
+            }
+
+            button {
+                padding: 0.7rem 1.25rem;
+                font-size: 0.85rem;
+            }
+
+            .welcome-button-group button {
+                padding: 1.25rem 0.85rem;
+            }
+
+            .button-icon {
+                width: 35px;
+                height: 35px;
+            }
+
+            .button-group button {
+                padding: 0.9rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            #main-interaction, #clarification-panel {
+                padding: 1.25rem;
+                box-sizing: border-box;
+                max-width: 100%;
+            }
+
+            .chat-window {
+                min-height: 200px;
+                padding: 1rem;
+                overflow-x: hidden;
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .chat-message {
+                font-size: 0.85rem;
+                padding: 0.65rem 0.85rem;
+                overflow-wrap: break-word;
+                word-wrap: break-word;
+                word-break: break-word;
+            }
+
+            .chat-message.assistant {
+                padding-left: 45px;
+            }
+
+            .chat-message.assistant::before {
+                width: 30px;
+                height: 30px;
+                left: 6px;
+                top: 6px;
+            }
+
+            .chat-input {
+                gap: 0.5rem;
+            }
+
+            .chat-input input {
+                font-size: 0.85rem;
+                padding: 0.6rem 0.75rem;
+            }
+
+            #stance-submission-screen textarea {
+                height: 180px;
+                font-size: 0.85rem;
+                padding: 0.75rem;
+            }
+
+            .tldr-section {
+                padding: 1rem;
+            }
+
+            .tldr-section h3 {
+                font-size: 1rem;
+            }
+
+            .tldr-section li {
+                font-size: 0.85rem;
+                line-height: 1.6;
+            }
+
+            .back-btn {
+                padding: 0.55rem 0.9rem;
+                font-size: 0.8rem;
+            }
+
+            .chat-message.topic-intro,
+            .chat-message.system {
+                font-size: 0.85rem;
+                padding: 0.65rem 0.85rem;
+            }
         }
 
     </style>
@@ -542,14 +819,12 @@
 
     <div id="app-container">
         <header>
-            <!-- ASSET: Header Logo -->
-            <div class="logo-placeholder"></div>
-            <h1>Civic Policy AI Interaction Study</h1>
+            <h1>Civic Engagement AI Interaction Study</h1>
         </header>
 
         <!-- Screen 1: Welcome & Group Assignment -->
         <div class="screen active" id="welcome-screen">
-            <h2>Welcome, Participant</h2>
+            <h2>Welcome</h2>
             <p>Thank you for participating in this research study on AI-assisted decision-making. Your task will be to review a complex policy topic, use an AI tool to understand it, and then provide your stance on the matter.</p>
             <p>Please select your assigned group to begin.</p>
             <!-- UPDATED: Button layout and icons -->
@@ -560,11 +835,11 @@
                          onerror="this.style.display='none'">
                     <div>Start as Group 1<br><span>(Single Chatbot)</span></div>
                 </button>
-                <button onclick="app.startSession('dualNegotiation')">
+                <button onclick="app.startSession('dualDebate')">
                     <!-- ASSET: Path: 'assets/icon-dual-chat.svg' -->
                     <img src="assets/icon-dual-chat.svg" alt="" class="button-icon"
                          onerror="this.style.display='none'">
-                    <div>Start as Group 2<br><span>(Dual-AI Negotiation)</span></div>
+                    <div>Start as Group 2<br><span>(Dual-AI Debate)</span></div>
                 </button>
             </div>
         </div>
@@ -604,15 +879,15 @@
                     </button>
                 </div>
 
-                <!-- Group 2: Dual-AI Negotiation View -->
-                <div id="dual-negotiation-view" style="display: none;">
+                <!-- Group 2: Dual-AI Debate View -->
+                <div id="dual-debate-view" style="display: none;">
                     <button class="back-btn" onclick="app.goBack()">← Back</button>
                     <h2>Step 2: Observe AI Debate</h2>
                     <p>Watch two AI agents debate opposing sides. Use the clarification chat to ask questions.</p>
-                    <button id="start-negotiation-btn" onclick="app.runNegotiation()">Start Debate</button>
-                    <div class="chat-window" id="negotiation-window"></div>
+                    <button id="start-debate-btn" onclick="app.runDebate()">Start Debate</button>
+                    <div class="chat-window" id="debate-window"></div>
                     <div id="tldr-container"></div>
-                    <button id="negotiation-proceed-btn" class="proceed-btn" onclick="app.goToStanceScreen()" disabled>
+                    <button id="debate-proceed-btn" class="proceed-btn" onclick="app.goToStanceScreen()" disabled>
                         Proceed to Submit Stance
                     </button>
                 </div>
@@ -666,17 +941,82 @@
 
         // --- 1. CONFIGURATION ---
 
-        // ⚠️ IMPORTANT: Replace with your Groq API key
+        // ⚠️ IMPORTANT: Replace with your API keys
         const API_KEY = "%%GROQ_API_KEY%%";
+        const TAVILY_API_KEY = "%%TAVILY_API_KEY%%";
         const LLM_MODEL = 'llama-3.1-8b-instant';
-        const NEGOTIATION_EXCHANGES = 2; // Number of exchanges per agent (2 FOR, 2 AGAINST = 4 total)
+        const DEBATE_EXCHANGES = 2; // Number of exchanges per agent (2 FOR, 2 AGAINST = 4 total)
         const MAX_RETRIES = 5; // Max retries for rate limit
         const EXCHANGE_DELAY = 2000; // 2 second delay between exchanges for rate limits
 
+        // Token limits for different agent types to enforce response length
+        const TOKEN_LIMITS = {
+            debateAgent: 120,      // ~3 sentences for debate agents (FOR/AGAINST)
+            factChecker: 80,       // ~1-2 sentences for fact checker
+            clarification: 100,    // ~2-3 sentences for clarification
+            summarizer: 120,       // Summary points
+            topicIntro: 80         // Brief introduction
+        };
+
         let groq;
-        
+
         // NEW: Sleep helper function
         const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        // Helper function to truncate response to maximum sentence count
+        function truncateToSentences(text, maxSentences = 3) {
+            if (!text) return text;
+
+            // Split by sentence endings (., !, ?)
+            const sentenceRegex = /[^.!?]+[.!?]+/g;
+            const sentences = text.match(sentenceRegex);
+
+            if (!sentences || sentences.length <= maxSentences) {
+                return text.trim();
+            }
+
+            // Take only the first maxSentences
+            const truncated = sentences.slice(0, maxSentences).join('').trim();
+            console.warn(`Response truncated from ${sentences.length} to ${maxSentences} sentences`);
+            return truncated;
+        }
+
+        // NEW: Tavily AI Search function
+        async function searchTavily(query) {
+            if (!TAVILY_API_KEY || TAVILY_API_KEY.includes("%%")) {
+                console.warn("Tavily API key not configured. Skipping search.");
+                return null;
+            }
+
+            try {
+                const response = await fetch('https://api.tavily.com/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        api_key: TAVILY_API_KEY,
+                        query: query,
+                        search_depth: 'basic',
+                        include_answer: true,
+                        max_results: 3
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.answer) {
+                    return {
+                        answer: data.answer,
+                        results: data.results || []
+                    };
+                }
+                return null;
+            } catch (error) {
+                console.error("Tavily search error:", error);
+                return null;
+            }
+        }
 
         // NEW: Helper function to trigger a JSON file download (we'll keep it as a fallback)
         function downloadJSON(data, filename) {
@@ -723,23 +1063,37 @@
         const PERSONAS = {
             clarification: {
                 name: "Neutral Assistant",
-                systemPrompt: "You are a neutral AI providing factual information. Answer in 2-3 sentences maximum. No opinions or stances."
+                systemPrompt: "You are a neutral AI providing factual information. You MUST answer in EXACTLY 2-3 sentences. No more. Count your sentences carefully. No opinions or stances.",
+                maxTokens: TOKEN_LIMITS.clarification,
+                maxSentences: 3
             },
             factChecker: {
                 name: "Fact Checker",
-                systemPrompt: "Fact-check ONE claim from the argument. Write EXACTLY 1-2 sentences. Start with 'Fact check:' and state if accurate or needs context."
+                systemPrompt: "You have access to web-sourced verification data. Fact-check ONE claim from the argument using the provided information. You MUST write EXACTLY 1-2 sentences. Start with 'Fact check:' and state if accurate, misleading, or needs context. DO NOT EXCEED 2 SENTENCES.",
+                maxTokens: TOKEN_LIMITS.factChecker,
+                maxSentences: 2
             },
             agentFor: {
                 name: "Agent For",
-                systemPrompt: `You argue FOR the policy. MAXIMUM 3 sentences. First sentence: address opponent's point briefly. Second sentence: state ONE key fact supporting the policy. Third sentence (if needed): cite a source. DO NOT write paragraphs. Be concise and factual.`
+                systemPrompt: `You are one of two AI agents engaged in a structured debate. You will be assigned a position to argue FOR in each exchange. Present arguments that support your assigned position using a narrative, accessible style. Tell a compelling story with real-world examples. When you cite sources, simply write [source] after the claim.
+
+CRITICAL RULE: You MUST respond in EXACTLY 3 sentences or fewer. Count each sentence. Period. If you write more than 3 sentences, your response will be cut off. Be conversational and engaging within this strict limit.`,
+                maxTokens: TOKEN_LIMITS.debateAgent,
+                maxSentences: 3
             },
             agentAgainst: {
                 name: "Agent Against",
-                systemPrompt: `You argue AGAINST the policy. MAXIMUM 3 sentences. First sentence: address opponent's point briefly. Second sentence: state ONE key fact opposing the policy. Third sentence (if needed): cite a source. DO NOT write paragraphs. Be concise and factual.`
+                systemPrompt: `You are one of two AI agents engaged in a structured debate. You will be assigned a position to argue AGAINST in each exchange. Present arguments that oppose your assigned position using a narrative, accessible style. Tell a compelling story about concerns, risks, or limitations with real-world examples. When you cite sources, simply write [source] after the claim.
+
+CRITICAL RULE: You MUST respond in EXACTLY 3 sentences or fewer. Count each sentence. Period. If you write more than 3 sentences, your response will be cut off. Be conversational and engaging within this strict limit.`,
+                maxTokens: TOKEN_LIMITS.debateAgent,
+                maxSentences: 3
             },
             summarizer: {
                 name: "Summarizer",
-                systemPrompt: "Create a TLDR with exactly 3 bullet points: 1) Main FOR argument, 2) Main AGAINST argument, 3) Key tension between them. Each bullet must be ONE sentence only."
+                systemPrompt: "Create exactly 3 summary points. Write:\nFOR: [One sentence summarizing the best argument in favor]\nAGAINST: [One sentence summarizing the best argument against]\nCONCLUSION: [One sentence about the key tension or tradeoff]\n\nKeep each sentence under 20 words. Be clear and direct.",
+                maxTokens: TOKEN_LIMITS.summarizer,
+                maxSentences: null  // Has its own format
             }
         };
 
@@ -748,16 +1102,19 @@
         const appState = {
             participantId: `pid_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
             currentScreen: 'welcome-screen',
-            interactionMode: null, // 'singleChatbot' or 'dualNegotiation'
+            interactionMode: null, // 'singleChatbot' or 'dualDebate'
             selectedProblemId: null,
             selectedProblem: null,
             isAiThinking: false,
-            
+
             // Data for Logging
             clarificationChatHistory: [],
             singleChatHistory: [],
-            negotiationHistory: [],
-            userStance: ""
+            debateHistory: [],
+            userStance: "",
+
+            // Current source URLs for citations
+            currentSourceUrls: []
         };
 
         // --- 4. DOM ELEMENT REFERENCES ---
@@ -779,11 +1136,11 @@
             singleChatForm: document.getElementById('single-chat-form'),
             singleChatInput: document.getElementById('single-chat-input'),
 
-            dualNegotiationView: document.getElementById('dual-negotiation-view'),
-            startNegotiationBtn: document.getElementById('start-negotiation-btn'),
-            negotiationWindow: document.getElementById('negotiation-window'),
-            // NEW: Proceed button for negotiation
-            negotiationProceedBtn: document.getElementById('negotiation-proceed-btn'),
+            dualDebateView: document.getElementById('dual-debate-view'),
+            startDebateBtn: document.getElementById('start-debate-btn'),
+            debateWindow: document.getElementById('debate-window'),
+            // NEW: Proceed button for debate
+            debateProceedBtn: document.getElementById('debate-proceed-btn'),
 
             clarificationPanel: document.getElementById('clarification-panel'),
             clarificationChatWindow: document.getElementById('clarification-chat-window'),
@@ -799,38 +1156,60 @@
 
         /**
          * Original function to get a non-streamed response.
+         * @param {string} systemPrompt - The system prompt
+         * @param {Array} messageHistory - Message history
+         * @param {number} maxTokens - Maximum tokens for response (optional)
+         * @param {number} maxSentences - Maximum sentences to allow (optional, enforced after generation)
          */
-        async function getFullAiResponse(systemPrompt, messageHistory) {
+        async function getFullAiResponse(systemPrompt, messageHistory, maxTokens = null, maxSentences = null) {
             if (!groq) {
                 console.error("Groq not initialized.");
                 throw new Error("AI connection not established.");
             }
-            
+
             const messages = [
                 { role: "system", content: systemPrompt },
                 ...messageHistory
             ];
-            
-            const completion = await groq.chat.completions.create({
+
+            const apiParams = {
                 messages: messages,
                 model: LLM_MODEL
-            });
-            
-            return completion.choices[0]?.message?.content || "No response.";
+            };
+
+            // Add max_tokens if specified
+            if (maxTokens) {
+                apiParams.max_tokens = maxTokens;
+            }
+
+            const completion = await groq.chat.completions.create(apiParams);
+
+            let response = completion.choices[0]?.message?.content || "No response.";
+
+            // Apply sentence truncation if specified
+            if (maxSentences) {
+                response = truncateToSentences(response, maxSentences);
+            }
+
+            return response;
         }
 
         /**
          * NEW: Wrapper for getFullAiResponse that handles 429 rate limits with exponential backoff.
+         * @param {string} systemPrompt - The system prompt
+         * @param {Array} messageHistory - Message history
+         * @param {number} maxTokens - Maximum tokens for response (optional)
+         * @param {number} maxSentences - Maximum sentences to allow (optional)
          */
-        async function getFullAiResponseWithBackoff(systemPrompt, messageHistory) {
+        async function getFullAiResponseWithBackoff(systemPrompt, messageHistory, maxTokens = null, maxSentences = null) {
             let retries = 0;
             let waitTime = 2000; // Initial wait time 2 seconds
-            
+
             while (retries < MAX_RETRIES) {
                 try {
                     // We only set isAiThinking right before the actual call
                     appState.isAiThinking = true;
-                    const response = await getFullAiResponse(systemPrompt, messageHistory);
+                    const response = await getFullAiResponse(systemPrompt, messageHistory, maxTokens, maxSentences);
                     appState.isAiThinking = false;
                     return response; // Success
                 } catch (error) {
@@ -857,7 +1236,7 @@
                             waitTime *= 2; // Default exponential backoff
                         }
                         
-                        addMessageToWindow(`Rate limit hit. Waiting for ${Math.round(delay/1000)}s before retrying...`, 'system', elements.negotiationWindow);
+                        addMessageToWindow(`Rate limit hit. Waiting for ${Math.round(delay/1000)}s before retrying...`, 'system', elements.debateWindow);
                         await sleep(delay);
                     } else {
                         // Not a rate limit error, throw it
@@ -875,8 +1254,10 @@
         /**
          * UPDATED: Now accepts an `avatarClass` and a `thinkingMessageElement`
          * Generic function to stream an AI response to a chat window.
+         * @param {number} maxTokens - Maximum tokens for response (optional)
+         * @param {number} maxSentences - Maximum sentences to allow (optional, enforced after generation)
          */
-        async function streamAiResponse(systemPrompt, messageHistory, targetWindow, speakerName, avatarClass = 'avatar-neutral', thinkingMessageElement) {
+        async function streamAiResponse(systemPrompt, messageHistory, targetWindow, speakerName, avatarClass = 'avatar-neutral', thinkingMessageElement, maxTokens = null, maxSentences = null) {
             if (!groq) {
                 console.error("Groq not initialized.");
                 addMessageToWindow("Error: AI connection not established.", "system", targetWindow);
@@ -897,11 +1278,18 @@
                     ...messageHistory
                 ];
 
-                const stream = await groq.chat.completions.create({
+                const streamParams = {
                     messages: messages,
                     model: LLM_MODEL,
                     stream: true
-                });
+                };
+
+                // Add max_tokens if specified
+                if (maxTokens) {
+                    streamParams.max_tokens = maxTokens;
+                }
+
+                const stream = await groq.chat.completions.create(streamParams);
 
                 let fullResponse = "";
                 for await (const chunk of stream) {
@@ -910,6 +1298,13 @@
                     contentElement.textContent = fullResponse; // Update text as it streams
                     targetWindow.scrollTop = targetWindow.scrollHeight;
                 }
+
+                // Apply sentence truncation if specified
+                if (maxSentences) {
+                    fullResponse = truncateToSentences(fullResponse, maxSentences);
+                    contentElement.textContent = fullResponse; // Update with truncated version
+                }
+
                 return fullResponse; // Return the full response for history logging
 
             } catch (error) {
@@ -928,16 +1323,38 @@
             appState.currentScreen = screenId;
         }
 
-        // UPDATED: Now returns the created element
+        // Helper function to convert [source] citations to clickable links
+        function convertSourceCitations(text, sourceUrls) {
+            if (!sourceUrls || sourceUrls.length === 0) {
+                return text;
+            }
+
+            let urlIndex = 0;
+
+            // Replace each [source] with a clickable link, cycling through available URLs
+            return text.replace(/\[source\]/gi, (match) => {
+                if (urlIndex < sourceUrls.length) {
+                    const url = sourceUrls[urlIndex];
+                    urlIndex++;
+                    return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: var(--primary-color); text-decoration: underline; font-weight: 500;" title="View source">[source]</a>`;
+                }
+                return match; // Return unchanged if we've run out of URLs
+            });
+        }
+
         function addMessageToWindow(text, sender, targetWindow, speakerName = null) {
             const msg = document.createElement('div');
             msg.className = `chat-message ${sender}`; // sender is 'user' or 'assistant' or 'system' or 'assistant agent-a'
-            
+
             let html = "";
             if (speakerName) {
                 html += `<strong>${speakerName}</strong>`;
             }
-            html += text;
+
+            // Convert [source] citations to clickable links
+            const processedText = convertSourceCitations(text, appState.currentSourceUrls);
+            html += processedText;
+
             msg.innerHTML = html;
 
             targetWindow.appendChild(msg);
@@ -961,7 +1378,7 @@
 
             // Reset views
             elements.singleChatView.style.display = 'none';
-            elements.dualNegotiationView.style.display = 'none';
+            elements.dualDebateView.style.display = 'none';
             elements.clarificationPanel.style.display = 'none';
 
             if (appState.interactionMode === 'singleChatbot') {
@@ -970,14 +1387,14 @@
                 addMessageToWindow(`<strong>${problem.title}</strong>`, 'system', elements.singleChatWindow);
                 appState.singleChatHistory.push({ role: 'system', content: `The selected topic is: ${problem.fullText}` });
 
-            } else if (appState.interactionMode === 'dualNegotiation') {
-                elements.dualNegotiationView.style.display = 'flex';
+            } else if (appState.interactionMode === 'dualDebate') {
+                elements.dualDebateView.style.display = 'flex';
                 elements.clarificationPanel.style.display = 'flex';
                 // Add problem context to clarification chat
                 addMessageToWindow(`<strong>${problem.title}</strong>`, 'system', elements.clarificationChatWindow);
                 appState.clarificationChatHistory.push({ role: 'system', content: `The selected topic is: ${problem.fullText}` });
-                // Add context to negotiation window
-                addMessageToWindow(`<strong>${problem.title}</strong>`, 'system', elements.negotiationWindow);
+                // Add context to debate window
+                addMessageToWindow(`<strong>${problem.title}</strong>`, 'system', elements.debateWindow);
             }
         }
 
@@ -1018,16 +1435,18 @@
                     PERSONAS.clarification.name
                 );
 
-                // Get AI response
+                // Get AI response with limits
                 const aiResponse = await streamAiResponse(
                     PERSONAS.clarification.systemPrompt,
                     appState.singleChatHistory,
                     elements.singleChatWindow,
                     PERSONAS.clarification.name,
                     'avatar-neutral',
-                    thinkingMsg // Pass the element to be filled
+                    thinkingMsg,  // Pass the element to be filled
+                    PERSONAS.clarification.maxTokens,     // Apply token limit
+                    PERSONAS.clarification.maxSentences   // Apply sentence limit
                 );
-                
+
                 // Add AI response to history
                 if (aiResponse) {
                     appState.singleChatHistory.push({ role: 'assistant', content: aiResponse });
@@ -1053,82 +1472,197 @@
                     PERSONAS.clarification.name
                 );
                 
-                // Get AI response
+                // Get AI response with limits
                 const aiResponse = await streamAiResponse(
                     PERSONAS.clarification.systemPrompt,
                     appState.clarificationChatHistory,
                     elements.clarificationChatWindow,
                     PERSONAS.clarification.name,
                     'avatar-neutral',
-                    thinkingMsg // Pass the element to be filled
+                    thinkingMsg,  // Pass the element to be filled
+                    PERSONAS.clarification.maxTokens,     // Apply token limit
+                    PERSONAS.clarification.maxSentences   // Apply sentence limit
                 );
-                
+
                 // Add AI response to history
                 if (aiResponse) {
                     appState.clarificationChatHistory.push({ role: 'assistant', content: aiResponse });
                 }
             },
 
-            async runNegotiation() {
-                console.log("Running negotiation...");
-                elements.startNegotiationBtn.disabled = true;
-                elements.startNegotiationBtn.innerHTML = '<span class="spinner"></span> Debate in Progress...';
+            async runDebate() {
+                console.log("Running debate...");
+                elements.startDebateBtn.disabled = true;
+                elements.startDebateBtn.innerHTML = '<span class="spinner"></span> Debate in Progress...';
 
                 const problemText = appState.selectedProblem.fullText;
-                let negotiationMessageHistory = [
-                    { role: 'user', content: `The policy to be debated is: ${problemText}. Provide your opening statement with evidence-based arguments.` }
-                ];
 
-                appState.negotiationHistory = [];
+                appState.debateHistory = [];
 
                 try {
-                    for (let i = 0; i < NEGOTIATION_EXCHANGES * 2; i++) {
+                    // Search for current information about the topic
+                    const searchQuery = `${appState.selectedProblem.title} latest statistics facts 2024 2025`;
+                    const searchResults = await searchTavily(searchQuery);
+
+                    let searchContext = "";
+                    if (searchResults && searchResults.answer) {
+                        searchContext = `\n\nCurrent information: ${searchResults.answer}`;
+                        if (searchResults.results && searchResults.results.length > 0) {
+                            // Store URLs in appState for citation conversion
+                            appState.currentSourceUrls = searchResults.results.slice(0, 3).map(r => r.url);
+                            searchContext += `\n\n(Sources are available - cite claims by writing [source])`;
+                        }
+                    }
+
+                    // First, provide a brief topic introduction
+                    const introPrompt = [
+                        { role: 'user', content: `Provide a brief 1-2 sentence introduction explaining what this topic is about: ${problemText}${searchContext}` }
+                    ];
+                    const topicIntro = await getFullAiResponseWithBackoff(
+                        "You are a neutral educator providing clear, unbiased context. You MUST explain the topic in EXACTLY 1-2 short sentences (under 30 words total). DO NOT exceed 2 sentences.",
+                        introPrompt,
+                        TOKEN_LIMITS.topicIntro,  // Token limit
+                        2  // Max 2 sentences
+                    );
+                    addMessageToWindow(topicIntro, 'topic-intro', elements.debateWindow);
+                    await sleep(1500); // Brief pause after introduction
+
+                    // Separate message histories for each agent
+                    let agentForHistory = [
+                        { role: 'user', content: `The topic to be debated is: ${problemText}.${searchContext}\n\nYour position: Argue FOR this topic. Present your opening statement with evidence-based arguments supporting this position. Use current data and facts.` }
+                    ];
+
+                    let agentAgainstHistory = [
+                        { role: 'user', content: `The topic to be debated is: ${problemText}.${searchContext}\n\nYour position: Argue AGAINST this topic. Present your opening statement with evidence-based arguments opposing this position. Use current data and facts.` }
+                    ];
+
+                    for (let i = 0; i < DEBATE_EXCHANGES * 2; i++) {
                         const isAgentFor = i % 2 === 0;
                         const agent = isAgentFor ? PERSONAS.agentFor : PERSONAS.agentAgainst;
                         const agentClass = isAgentFor ? 'agent-for' : 'agent-against';
+                        const agentHistory = isAgentFor ? agentForHistory : agentAgainstHistory;
+                        const opponentHistory = isAgentFor ? agentAgainstHistory : agentForHistory;
 
-                        // Get agent response
-                        const aiResponse = await getFullAiResponseWithBackoff(agent.systemPrompt, negotiationMessageHistory);
-                        addMessageToWindow(aiResponse, `assistant ${agentClass}`, elements.negotiationWindow, agent.name);
+                        // Get agent response with strict limits
+                        const aiResponse = await getFullAiResponseWithBackoff(
+                            agent.systemPrompt,
+                            agentHistory,
+                            agent.maxTokens,      // Apply token limit from persona
+                            agent.maxSentences    // Apply sentence limit from persona
+                        );
+                        addMessageToWindow(aiResponse, `assistant ${agentClass}`, elements.debateWindow, agent.name);
 
-                        appState.negotiationHistory.push({ speaker: agent.name, text: aiResponse });
-                        negotiationMessageHistory.push({ role: 'assistant', content: aiResponse });
+                        appState.debateHistory.push({ speaker: agent.name, text: aiResponse });
+
+                        // Add the response to this agent's history
+                        agentHistory.push({ role: 'assistant', content: aiResponse });
+
+                        // Add the response to the opponent's history as context
+                        opponentHistory.push({ role: 'user', content: `Your opponent just argued: "${aiResponse}"\n\nRespond to this argument from your assigned position with evidence.` });
 
                         // Add fact-checking after every exchange pair
-                        if (i % 2 === 1 && i < NEGOTIATION_EXCHANGES * 2 - 1) {
+                        if (i % 2 === 1 && i < DEBATE_EXCHANGES * 2 - 1) {
                             await sleep(EXCHANGE_DELAY);
+
+                            // Search for verification of claims
+                            const factSearchQuery = `verify fact check: ${aiResponse.substring(0, 200)}`;
+                            const factSearchResults = await searchTavily(factSearchQuery);
+
+                            let factContext = "";
+                            if (factSearchResults && factSearchResults.answer) {
+                                factContext = `\n\nWeb verification: ${factSearchResults.answer}`;
+                            }
+
                             const factCheckPrompt = [
-                                { role: 'user', content: `Review this argument: "${aiResponse}". Fact-check one key claim.` }
+                                { role: 'user', content: `Review this argument: "${aiResponse}".${factContext}\n\nFact-check one key claim using the verification data provided.` }
                             ];
-                            const factCheck = await getFullAiResponseWithBackoff(PERSONAS.factChecker.systemPrompt, factCheckPrompt);
-                            addMessageToWindow(factCheck, 'assistant fact-checker', elements.negotiationWindow, PERSONAS.factChecker.name);
+                            const factCheck = await getFullAiResponseWithBackoff(
+                                PERSONAS.factChecker.systemPrompt,
+                                factCheckPrompt,
+                                PERSONAS.factChecker.maxTokens,
+                                PERSONAS.factChecker.maxSentences
+                            );
+                            addMessageToWindow(factCheck, 'assistant fact-checker', elements.debateWindow, PERSONAS.factChecker.name);
                         }
 
-                        negotiationMessageHistory.push({ role: 'user', content: "Respond to the previous argument with evidence." });
                         await sleep(EXCHANGE_DELAY);
                     }
 
-                    addMessageToWindow("Debate complete.", 'system', elements.negotiationWindow);
+                    // Final fact check after all exchanges
+                    await sleep(EXCHANGE_DELAY);
+
+                    // Search for overall topic verification
+                    const finalSearchQuery = `${appState.selectedProblem.title} latest facts statistics 2024 2025`;
+                    const finalSearchResults = await searchTavily(finalSearchQuery);
+
+                    let finalFactContext = "";
+                    if (finalSearchResults && finalSearchResults.answer) {
+                        finalFactContext = `\n\nLatest information: ${finalSearchResults.answer}`;
+                    }
+
+                    const finalFactCheckPrompt = [
+                        { role: 'user', content: `Review the overall debate and fact-check one key claim from either side.${finalFactContext}` }
+                    ];
+                    const finalFactCheck = await getFullAiResponseWithBackoff(
+                        PERSONAS.factChecker.systemPrompt,
+                        finalFactCheckPrompt,
+                        PERSONAS.factChecker.maxTokens,
+                        PERSONAS.factChecker.maxSentences
+                    );
+                    addMessageToWindow(finalFactCheck, 'assistant fact-checker', elements.debateWindow, PERSONAS.factChecker.name);
+
+                    addMessageToWindow("Debate complete.", 'system', elements.debateWindow);
 
                     // Generate TLDR
                     const tldrPrompt = [
-                        { role: 'user', content: `Summarize this debate in 3-4 bullet points:\n${appState.negotiationHistory.map(h => `${h.speaker}: ${h.text}`).join('\n\n')}` }
+                        { role: 'user', content: `Summarize this debate in exactly 3 short sentences:\n${appState.debateHistory.map(h => `${h.speaker}: ${h.text}`).join('\n\n')}` }
                     ];
-                    const tldr = await getFullAiResponseWithBackoff(PERSONAS.summarizer.systemPrompt, tldrPrompt);
+                    const tldr = await getFullAiResponseWithBackoff(
+                        PERSONAS.summarizer.systemPrompt,
+                        tldrPrompt,
+                        PERSONAS.summarizer.maxTokens,
+                        PERSONAS.summarizer.maxSentences
+                    );
 
-                    // Display TLDR
+                    // Display TLDR as clean bullet points with FOR/AGAINST/CONCLUSION structure
                     const tldrContainer = document.getElementById('tldr-container');
-                    tldrContainer.innerHTML = `<div class="tldr-section"><h3>Summary</h3>${tldr.replace(/\n/g, '<br>')}</div>`;
 
-                    elements.startNegotiationBtn.textContent = "Debate Complete";
-                    elements.negotiationProceedBtn.disabled = false;
-                    elements.negotiationProceedBtn.textContent = "Proceed to Submit Stance";
+                    // Parse the summary to extract FOR/AGAINST/CONCLUSION
+                    const lines = tldr.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+
+                    let forPoint = '';
+                    let againstPoint = '';
+                    let conclusionPoint = '';
+
+                    lines.forEach(line => {
+                        if (line.match(/^FOR:/i)) {
+                            forPoint = line.replace(/^FOR:\s*/i, '');
+                        } else if (line.match(/^AGAINST:/i)) {
+                            againstPoint = line.replace(/^AGAINST:\s*/i, '');
+                        } else if (line.match(/^CONCLUSION:/i)) {
+                            conclusionPoint = line.replace(/^CONCLUSION:\s*/i, '');
+                        }
+                    });
+
+                    const tldrHTML = `<div class="tldr-section">
+                        <h3>Summary</h3>
+                        <ul>
+                            <li><strong>FOR:</strong> ${forPoint || 'Supporting arguments were presented.'}</li>
+                            <li><strong>AGAINST:</strong> ${againstPoint || 'Opposing concerns were raised.'}</li>
+                            <li><strong>CONCLUSION:</strong> ${conclusionPoint || 'Key tensions remain between these positions.'}</li>
+                        </ul>
+                    </div>`;
+                    tldrContainer.innerHTML = tldrHTML;
+
+                    elements.startDebateBtn.textContent = "Debate Complete";
+                    elements.debateProceedBtn.disabled = false;
+                    elements.debateProceedBtn.textContent = "Proceed to Submit Stance";
 
                 } catch (error) {
-                    console.error("Negotiation failed:", error);
-                    addMessageToWindow(`Error: ${error.message}`, 'system', elements.negotiationWindow);
-                    elements.startNegotiationBtn.textContent = "Debate Failed";
-                    elements.startNegotiationBtn.style.backgroundColor = 'red';
+                    console.error("Debate failed:", error);
+                    addMessageToWindow(`Error: ${error.message}`, 'system', elements.debateWindow);
+                    elements.startDebateBtn.textContent = "Debate Failed";
+                    elements.startDebateBtn.style.backgroundColor = 'red';
                 }
             },
             
@@ -1192,7 +1726,7 @@
                     logs: {
                         singleChatHistory: appState.singleChatHistory,
                         clarificationChatHistory: appState.clarificationChatHistory,
-                        negotiationHistory: appState.negotiationHistory
+                        debateHistory: appState.debateHistory
                     }
                 };
 
@@ -1252,6 +1786,5 @@
     </script>
 </body>
 </html>
-
 
 
